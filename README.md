@@ -53,6 +53,30 @@ spark.sql("SELECT * FROM IPAddresses WHERE is6to4(IPAddress)")
 
 # Teredo
 spark.sql("SELECT * FROM IPAddresses WHERE isTeredo(IPAddress)")
+
+# IPv4
+spark.sql("SELECT * FROM IPAddresses WHERE isIPv4(IPAddress)")
+
+# IPv6
+spark.sql("SELECT * FROM IPAddresses WHERE isIPv6(IPAddress)")
+```
+
+**Output address in different formats**
+```python
+# Exploded
+spark.sql("SELECT explodedIP(IPAddress) FROM IPAddresses")
+
+# Compressed
+spark.sql("SELECT compressedIP(IPAddress) FROM IPAddresses")
+
+# Teredo
+spark.sql("SELECT teredo(IPAddress) FROM IPAddresses")
+
+# IPv4 Mapped
+spark.sql("SELECT IPv4Mapped(IPAddress) FROM IPAddresses")
+
+# 6to4
+spark.sql("SELECT sixtofour(IPAddress) FROM IPAddresses")
 ```
 
 **Sort or compare IP Addresses**
@@ -70,6 +94,12 @@ spark.sql("SELECT * FROM IPAddresses SORT BY ipAsBinary(IPAddress)")
 
 # Sort ONLY IPv4
 spark.sql("SELECT * FROM IPv4 SORT BY ipv4AsNum(IPAddress)")
+```
+
+**IP network functions**
+```python
+# Network contains
+spark.sql("SELECT * FROM IPAddresses WHERE networkContains(IPAddress, '195.0.0.0/16')")
 ```
 
 **IP Set**
@@ -129,4 +159,43 @@ SparkIPSets.add(ipSet)
 #Use it!
 # Set Contains
 spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'ipSet')")
+
+# Show sets available to use
+SparkIPSets.setsAvailable()
+
+# Clear sets available
+SparkIPSets.clear()
+```
+
+#### IP Set functions (outside of SparkSQL):
+```python
+ipSet = IPSet()
+
+# Add
+ipSet.add('0.0.0.0', '::/16')
+
+# Remove
+ipSet.remove('::/16')
+
+# Contains
+ipSet.contains('0.0.0.0', '::')
+
+# Clear
+ipSet.clear()
+
+# Show all
+ipSet.showAll()
+
+# Union
+ipSet2 = ('2001::', '::33', 'ffff::f')
+ipSet.union(ipSet2)
+
+# Intersects
+ipSet.intersects(ipSet2)
+
+# Diff
+ipSet.diff(ipSet2)
+
+# Is empty
+ipSet.isEmpty()
 ```
