@@ -71,6 +71,5 @@ print("Set contains on another set")
 spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'test2')").show()
 
 test3 = IPSet({"192.0.0.0", ip2, '10.1.128.0/17', "::", "8::9", '8.7.9.7', '192.0.2.0/26'})
-
-print('union')
-test3.diff(test).showAll()
+test3.add('192.0.2.0/26')
+print(test3.contains('10.1.128.255'))
