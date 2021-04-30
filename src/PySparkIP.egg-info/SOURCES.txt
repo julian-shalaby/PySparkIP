@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+src/PySparkIP.egg-info/PKG-INFO
+src/PySparkIP.egg-info/SOURCES.txt
+src/PySparkIP.egg-info/dependency_links.txt
+src/PySparkIP.egg-info/top_level.txt
+src/SparkIP/SparkIP.py
+src/SparkIP/__init__.py
