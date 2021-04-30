@@ -1,5 +1,4 @@
 import ipaddress
-from varname import argname
 
 """
 NEED FUNCTIONS FOR:
@@ -390,13 +389,12 @@ class SetMap:
     def __init__(self):
         self.setMap = {}
 
-    def add(self, *set_to_add: IPSet):
-        for i, j in enumerate(argname(set_to_add)):
-            self.setMap[j] = set_to_add[i]
+    def add(self, set_to_add: IPSet, set_name: str):
+        self.setMap[set_name] = set_to_add
         update_sets()
 
     def remove(self, *set_name):
-        for i in argname(set_name):
+        for i in set_name:
             del self.setMap[i]
         update_sets()
 

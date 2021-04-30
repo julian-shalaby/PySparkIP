@@ -61,7 +61,8 @@ ip2 = ipaddress.ip_address('41.162.245.45')
 ips = {"192.0.0.0", "5422:6622:1dc6:366a:e728:84d4:257e:655a", ip2, "::"}
 test = IPSet(ipAddr, ips)
 test2 = IPSet('192.0.2.0/26', '192.168.8.128/25', '10.0.1.0/24', "::", "8::9", '10.1.128.0/17')
-SparkIPSets.add(test, test2)
+SparkIPSets.add(test, 'test')
+SparkIPSets.add(test2, 'test2')
 spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'test')").show()
 
 # Set contains on another set

@@ -4,7 +4,7 @@
 An API for working with IP addresses in Apache Spark. Built on top of [ipaddress](https://docs.python.org/3/library/ipaddress.html).
 
 ## Usage
-  * pip install -i https://test.pypi.org/simple/ PySparkIP==1.0.0
+  * pip install -i https://test.pypi.org/simple/ PySparkIP==1.0.2
   * from SparkIP.SparkIP import *
 
 ## License
@@ -138,11 +138,13 @@ Before using IP Sets in SparkSQL, register it by passing it to `SparkIPSets`
 ipSet = IPSet('::')
 ipSet2 = IPSet()
 
-SparkIPSets.add(ipSet, ipSet2)
+# Pass the set, then the set name
+SparkIPSets.add(ipSet, 'ipSet')
+SparkIPSets.add(ipSet2, 'ipSet2')
 ```
 #### Remove IP Sets from registered sets in SparkSQL:
 ```python
-SparkIPSets.remove(ipSet, ipSet2)
+SparkIPSets.remove('ipSet', 'ipSet2')
 ```
 
 #### Use IP Sets in SparkSQL:
@@ -154,7 +156,7 @@ setOfIPs = {"192.0.0.0", "5422:6622:1dc6:366a:e728:84d4:257e:655a", "::"}
 ipSet = IPSet(setOfIPs)
 
 # Register it
-SparkIPSets.add(ipSet)
+SparkIPSets.add(ipSet, 'ipSet')
 
 #Use it!
 # Set Contains
@@ -162,6 +164,9 @@ spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'ipSet')")
 
 # Show sets available to use
 SparkIPSets.setsAvailable()
+
+# Remove a set
+SparkIPSets.remove('ipSet')
 
 # Clear sets available
 SparkIPSets.clear()
