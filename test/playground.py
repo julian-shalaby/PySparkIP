@@ -1,6 +1,5 @@
 from pyspark.sql import SparkSession
-from src.SparkIP import *
-import ipaddress
+from src.SparkIP.SparkIP import *
 
 spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
 SparkIPInit(spark)
