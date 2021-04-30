@@ -1,0 +1,1 @@
+# optional, needed to make editable pip installs work
