@@ -29,8 +29,38 @@ class IPAddress:
         self.addr = addr
         self.ipaddr = ipaddress.ip_address(addr)
 
-    def is_multicast(self):
-        if self.ipaddr.is_multicast:
-            return True
-        else:
+    def is_ipv4_mapped(self):
+        if self.ipaddr.version == 4:
             return False
+        if self.ipaddr.ipv4_mapped is not None:
+            return True
+        return False
+
+    def is_6to4(self):
+        if self.ipaddr.version == 4:
+            return False
+        if self.ipaddr.sixtofour is not None:
+            return True
+        return False
+
+    def is_teredo(self):
+        if self.ipaddr.version == 4:
+            return False
+        if self.ipaddr.teredo is not None:
+            return True
+        return False
+
+    def teredo(self):
+        if self.ipaddr.version == 4:
+            return None
+        return self.ipaddr.teredo
+
+    def ipv4_mapped(self):
+        if self.ipaddr.version == 4:
+            return None
+        return self.ipaddr.ipv4_mapped
+
+    def sixtofour(self):
+        if self.ipaddr.version == 4:
+            return None
+        return self.ipaddr.sixtofour
