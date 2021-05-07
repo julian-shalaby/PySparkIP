@@ -251,6 +251,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     try:
@@ -269,6 +271,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     try:
@@ -288,6 +292,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     try:
@@ -305,6 +311,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             found = False
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
