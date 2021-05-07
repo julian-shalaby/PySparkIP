@@ -1,18 +1,20 @@
+from pyspark.sql.types import StructField, StructType
 from pyspark.sql import SparkSession
-from src.SparkIP.SparkIP import *
+from pyspark.sql.functions import col
+from SparkIP import *
+
 
 spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
 SparkIPInit(spark)
+schema = StructType([StructField("IPAddress", IPAddressUDT())])
 
-ipv4DF = spark.read.json("ipFile.json")
-ipv4DF.createOrReplaceTempView("IPv4")
-
-ipDF = spark.read.json("ipMixedFile.json")
+ipDF = spark.read.json("ipMixedFile.json", schema=schema)
 ipDF.createOrReplaceTempView("IPAddresses")
 
 # Multicast
 print("Multicast")
 spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)").show()
+ipDF.select('*').filter("isMulticast(IPAddress)").show()
 
 # Private
 print("Private")
@@ -37,10 +39,6 @@ spark.sql("SELECT explodedIP(IPAddress) FROM IPAddresses").show()
 # Sorting
 print("Sorting")
 spark.sql("SELECT * FROM IPAddresses SORT BY ipAsBinary(IPAddress)").show()
-
-# Comparing
-print("Comparing")
-spark.sql("SELECT * FROM IPAddresses WHERE ipAsBinary(IPAddress) > ipAsBinary('192.209.45.194')").show()
 
 # Network contains
 print("Network contains")
