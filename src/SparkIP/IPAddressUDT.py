@@ -1,24 +1,36 @@
-from pyspark.sql.types import UserDefinedType, StructField, \
-    StructType, StringType, LongType
+from pyspark.sql.types import UserDefinedType, StringType
 import ipaddress
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
-from IPAddress import *
 
 
-def main():
-    spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
+class IPAddressUDT(UserDefinedType):
+    """
+    User-defined type (UDT) for IPAddress.
+    """
 
-    schema = StructType([StructField("IPAddress", IPAddressUDT())])
+    @classmethod
+    def sqlType(cls):
+        return StringType()
 
-    ipDF = spark.read.json("/Users/julianshalaby/Desktop/PySparkIP/test/ipMixedFile.json", schema=schema)
-    ipDF.createOrReplaceTempView("IPAddresses")
+    @classmethod
+    def module(cls):
+        return '__main__'
 
-    spark.udf.register("isMulticast", lambda ip: ip.is_multicast(), "boolean")
+    def serialize(self, obj):
+        return obj.addr
 
-    # ipDF.select('*').filter(col("IPAddress") == '3.229.97.242').show()
-    spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)").show()
+    def deserialize(self, datum):
+        return IPAddress(datum)
 
 
-if __name__ == "__main__":
-    main()
+class IPAddress:
+    __UDT__ = IPAddressUDT()
+
+    def __init__(self, addr):
+        self.addr = addr
+        self.ipaddr = ipaddress.ip_address(addr)
+
+    def is_multicast(self):
+        if self.ipaddr.is_multicast:
+            return True
+        else:
+            return False
