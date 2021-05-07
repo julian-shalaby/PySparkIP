@@ -2,63 +2,23 @@ from pyspark.sql.types import UserDefinedType, StructField, \
     StructType, StringType, LongType
 import ipaddress
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from IPAddress import *
 
 
-class IPAddressUDT(UserDefinedType):
-    """
-    User-defined type (UDT) for IPAddress.
-    """
+def main():
+    spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
 
-    @classmethod
-    def sqlType(cls):
-        return StringType()
+    schema = StructType([StructField("IPAddress", IPAddressUDT())])
 
-    @classmethod
-    def module(cls):
-        return '__main__'
+    ipDF = spark.read.json("/Users/julianshalaby/Desktop/PySparkIP/test/ipMixedFile.json", schema=schema)
+    ipDF.createOrReplaceTempView("IPAddresses")
 
-    def serialize(self, obj):
-        return obj.addr
+    spark.udf.register("isMulticast", lambda ip: ip.is_multicast(), "boolean")
 
-    def deserialize(self, datum):
-        return IPAddress(datum[0])
-
-    @staticmethod
-    def foo():
-        pass
-
-    @property
-    def props(self):
-        return {}
+    # ipDF.select('*').filter(col("IPAddress") == '3.229.97.242').show()
+    spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)").show()
 
 
-class IPAddress:
-    """
-    An example class to demonstrate UDT in only Python
-    """
-    __UDT__ = IPAddressUDT()  # type: ignore
-
-    def __init__(self, addr):
-        self.addr = addr
-        self.addrNum = int(ipaddress.ip_address(addr))
-
-    def __repr__(self):
-        return f"IPAddress({self.addr})"
-
-    def __str__(self):
-        return f"{self.addr}"
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and \
-               other.addrNum == self.addrNum
-
-
-spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
-
-schema = StructType([StructField("IPAddress", IPAddressUDT())])
-
-ipDF = spark.read.json("/Users/julianshalaby/Desktop/PySparkIP/test/ipMixedFile.json", schema=schema)
-ipDF.createOrReplaceTempView("IPAddresses")
-
-ipDF.select('*').show()
-
+if __name__ == "__main__":
+    main()
