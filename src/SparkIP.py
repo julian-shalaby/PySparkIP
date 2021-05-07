@@ -1,4 +1,4 @@
-import ipaddress
+from IPAddressUDT import *
 
 """
 NEED FUNCTIONS FOR:
@@ -11,6 +11,7 @@ OTHER STUFF WE NEED:
     Allow IPSets to input other IPSets for initialization, add, and remove
     Testing
     Ignore SimpleFunctionRegistry warning without messing with logLevel
+    Optimize IPSet. Its not optimized for UDTs rn
 
 USEFUL LINKS:
     (Features)
@@ -251,6 +252,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     try:
@@ -269,6 +272,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     try:
@@ -288,6 +293,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     try:
@@ -305,6 +312,8 @@ class IPSet:
         for ip in ips:
             if ip is None:
                 return
+            if isinstance(ip, IPAddress):
+                ip = ip.ipaddr
             found = False
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
@@ -410,106 +419,58 @@ class SetMap:
 SparkIPSets = SetMap()
 
 
-def is_ipv4_mapped(ip):
-    temp = ipaddress.ip_address(ip)
-    if temp.version == 4:
-        return False
-    if temp.ipv4_mapped is not None:
-        return True
-    return False
-
-
-def is_6to4(ip):
-    temp = ipaddress.ip_address(ip)
-    if temp.version == 4:
-        return False
-    if temp.sixtofour is not None:
-        return True
-    return False
-
-
-def is_teredo(ip):
-    temp = ipaddress.ip_address(ip)
-    if temp.version == 4:
-        return False
-    if temp.teredo is not None:
-        return True
-    return False
-
-
-def teredo(ip):
-    temp = ipaddress.ip_address(ip)
-    if temp.version == 4:
-        return None
-    return temp.teredo
-
-
-def ipv4_mapped(ip):
-    temp = ipaddress.ip_address(ip)
-    if temp.version == 4:
-        return None
-    return temp.ipv4_mapped
-
-
-def sixtofour(ip):
-    temp = ipaddress.ip_address(ip)
-    if temp.version == 4:
-        return None
-    return temp.sixtofour
-
-
 def SparkIPInit(spark, log_level="WARN"):
     """Address Types"""
     # Multicast
-    spark.udf.register("isMulticast", lambda ip: ipaddress.ip_address(ip).is_multicast, "boolean")
+    spark.udf.register("isMulticast", lambda ip: ip.ipaddr.is_multicast, "boolean")
     # Private
-    spark.udf.register("isPrivate", lambda ip: ipaddress.ip_address(ip).is_private, "boolean")
+    spark.udf.register("isPrivate", lambda ip: ip.ipaddr.is_private, "boolean")
     # Global
-    spark.udf.register("isGlobal", lambda ip: ipaddress.ip_address(ip).is_global, "boolean")
+    spark.udf.register("isGlobal", lambda ip: ip.ipaddr.is_global, "boolean")
     # Unspecified
-    spark.udf.register("isUnspecified", lambda ip: ipaddress.ip_address(ip).is_unspecified, "boolean")
+    spark.udf.register("isUnspecified", lambda ip: ip.ipaddr.is_unspecified, "boolean")
     # Reserved
-    spark.udf.register("isReserved", lambda ip: ipaddress.ip_address(ip).is_reserved, "boolean")
+    spark.udf.register("isReserved", lambda ip: ip.ipaddr.is_reserved, "boolean")
     # Loopback
-    spark.udf.register("isLoopback", lambda ip: ipaddress.ip_address(ip).is_loopback, "boolean")
+    spark.udf.register("isLoopback", lambda ip: ip.ipaddr.is_loopback, "boolean")
     # Link local
-    spark.udf.register("isLinkLocal", lambda ip: ipaddress.ip_address(ip).is_link_local, "boolean")
+    spark.udf.register("isLinkLocal", lambda ip: ip.ipaddr.is_link_local, "boolean")
     # Site local
-    spark.udf.register("isSiteLocal", lambda ip: ipaddress.ip_address(ip).is_site_local, "boolean")
+    spark.udf.register("isSiteLocal", lambda ip: ip.ipaddr.is_site_local, "boolean")
     # isIPv4 mapped
-    spark.udf.register("isIPv4Mapped", lambda ip: is_ipv4_mapped(ip), "boolean")
+    spark.udf.register("isIPv4Mapped", lambda ip: ip.is_ipv4_mapped(), "boolean")
     # is6to4
-    spark.udf.register("is6to4", lambda ip: is_6to4(ip), "boolean")
+    spark.udf.register("is6to4", lambda ip: ip.is_6to4(), "boolean")
     # isTeredo
-    spark.udf.register("isTeredo", lambda ip: is_teredo(ip), "boolean")
+    spark.udf.register("isTeredo", lambda ip: ip.is_teredo(), "boolean")
     # Compressed
-    spark.udf.register("compressedIP", lambda ip: ipaddress.ip_address(ip).compressed, "string")
+    spark.udf.register("compressedIP", lambda ip: ip.ipaddr.compressed, "string")
     # Exploded
-    spark.udf.register("explodedIP", lambda ip: ipaddress.ip_address(ip).exploded, "string")
+    spark.udf.register("explodedIP", lambda ip: ip.ipaddr.exploded, "string")
     # IPv4 Mapped
-    spark.udf.register("IPv4Mapped", lambda ip: ipv4_mapped(ip), "string")
+    spark.udf.register("IPv4Mapped", lambda ip: ip.ipv4_mapped(), "string")
     # 6to4
-    spark.udf.register("sixtofour", lambda ip: sixtofour(ip), "string")
+    spark.udf.register("sixtofour", lambda ip: ip.sixtofour(), "string")
     # Teredo
-    spark.udf.register("teredo", lambda ip: teredo(ip), "string")
+    spark.udf.register("teredo", lambda ip: ip.teredo(), "string")
 
     """IP as a number"""""
     # spark only supports long correctly. only use on IPv4
-    spark.udf.register("ipv4AsNum", lambda ip: int(ipaddress.ip_address(ip)), "long")
+    spark.udf.register("ipv4AsNum", lambda ip: int(ip.ipaddr), "long")
 
     """IP as a binary string"""""
-    spark.udf.register("ipAsBinary", lambda ip: format(int(ipaddress.ip_address(ip)), '0128b'), "string")
+    spark.udf.register("ipAsBinary", lambda ip: format(int(ip.ipaddr), '0128b'), "string")
 
     """Network functions"""
     # Net contains
-    spark.udf.register("networkContains", lambda ip, net: ipaddress.ip_address(ip) in ipaddress.ip_network(net),
+    spark.udf.register("networkContains", lambda ip, net: ip.ipaddr in ipaddress.ip_network(net),
                        "boolean")
 
     """Other functions"""
     # IPv4 check
-    spark.udf.register("isIPv4", lambda ip: ipaddress.ip_address(ip).version == 4, "boolean")
+    spark.udf.register("isIPv4", lambda ip: ip.ipaddr.version == 4, "boolean")
     # IPv6 check
-    spark.udf.register("isIPv6", lambda ip: ipaddress.ip_address(ip).version == 6, "boolean")
+    spark.udf.register("isIPv6", lambda ip: ip.ipaddr.version == 6, "boolean")
     # So IPSet can reuse the spark session variable and reset log level
     update_sets(spark, log_level)
 
