@@ -7,11 +7,9 @@ NEED FUNCTIONS FOR:
     IP network range format
 
 OTHER STUFF WE NEED:
-    Caching IPAddresses and Networks in memory
     Allow IPSets to input other IPSets for initialization, add, and remove
     Testing
     Ignore SimpleFunctionRegistry warning without messing with logLevel
-    Optimize IPSet. Its not optimized for UDTs rn
 
 USEFUL LINKS:
     (Features)
@@ -26,7 +24,7 @@ USEFUL LINKS:
     https://realpython.com/pypi-publish-python-package/
 """
 
-
+# Helper function for ordering IP networks in the AVL tree
 # 1 = net1 > net2
 # -1 = net1 < net2
 # 0 = net1 == net2
@@ -66,7 +64,9 @@ class TreeNode(object):
         self.right = None
         self.height = 1
 
-
+# AVL Tree to store IP networks
+# Sorting priority order: Network address -> Broadcast address -> Network version (v6 > v4)
+# If IP network is exact same, do nothing
 class AVL_Tree(object):
     def __init__(self):
         self.length = 0
@@ -221,7 +221,22 @@ class AVL_Tree(object):
             else:
                 return intersectList
 
+    def returnAll(self, root):
+        if root is None:
+            return
+        temp = root
+        return_list = []
+        while True:
+            return_list.append(temp.val)
+            if temp.left is not None:
+                temp = temp.left
+            elif temp.right is not None:
+                temp = temp.right
+            else:
+                return return_list
 
+
+# To check if an IP network is in the tree
 def avl_search(root, key):
     if root is None or key is None:
         return False
@@ -233,6 +248,7 @@ def avl_search(root, key):
         return True
 
 
+# To check if an IP address is in the tree
 def avl_search_ipAddr(root, key):
     if root is None or key is None:
         return False
@@ -246,77 +262,140 @@ def avl_search_ipAddr(root, key):
 
 class IPSet:
     def __init__(self, *ips):
+        # Hash map for IP addresses, AVL Tree for IP networks
         self.ipMap = {}
         self.netAVL = AVL_Tree()
         self.root = None
+
+        # Iterate through all IPs passed through
         for ip in ips:
-            if ip is None:
-                return
+            # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
             if isinstance(ip, IPAddress):
-                ip = ip.ipaddr
+                self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
+                continue
+
+            # If its an IPSet, extract all of its values to a list and add it to the set
+            if isinstance(ip, IPSet):
+                ip = ip.returnAll()
+
+            # If its a list, tuple, or set, iterate through it and add each element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
+                    # Try converting each element to an ipaddress object.
+                    # If it succeeds, add it to the IP address map
                     try:
                         ipaddr = ipaddress.ip_address(element)
                         self.ipMap[str(ipaddr)] = int(ipaddr)
+                    # If it fails, it is a network. Add it to the IP network tree
                     except:
                         self.root = self.netAVL.insert(self.root, ipaddress.ip_network(element))
+                # Continue to the next input after iterating through the list
                 continue
+
+            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
+            # If it succeeds, add it to the IP address map
             try:
                 ipaddr = ipaddress.ip_address(ip)
                 self.ipMap[str(ipaddr)] = int(ipaddr)
+            # If it fails, it is a network. Add it to the IP network tree
             except:
                 self.root = self.netAVL.insert(self.root, ipaddress.ip_network(ip))
 
     def add(self, *ips):
+        # Iterate through all IPs passed through
         for ip in ips:
-            if ip is None:
-                return
+            # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
             if isinstance(ip, IPAddress):
-                ip = ip.ipaddr
+                self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
+                continue
+
+            # If its an IPSet, extract all of its values to a list and add it to the set
+            if isinstance(ip, IPSet):
+                ip = ip.returnAll()
+
+            # If its a list, tuple, or set, iterate through it and add each element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
+                # Try converting each element to an ipaddress object.
+                # If it succeeds, add it to the IP address map
                 for element in ip:
                     try:
                         ipaddr = ipaddress.ip_address(element)
                         self.ipMap[str(ipaddr)] = int(ipaddr)
+                    # If it fails, it is a network. Add it to the IP network tree
                     except:
                         self.root = self.netAVL.insert(self.root, ipaddress.ip_network(element))
+                # Continue to the next input after iterating through the list
                 continue
+
+            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
+            # If it succeeds, add it to the IP address map
             try:
                 ipaddr = ipaddress.ip_address(ip)
                 self.ipMap[str(ipaddr)] = int(ipaddr)
+            # If it fails, it is a network. Add it to the IP network tree
             except:
                 self.root = self.netAVL.insert(self.root, ipaddress.ip_network(ip))
+
+        # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()
 
     def remove(self, *ips):
+        # Iterate through all IPs passed through
         for ip in ips:
-            if ip is None:
-                return
+            # If its an IP UDT, extract the UDTs value, remove it to from map, then go to the next iteration
             if isinstance(ip, IPAddress):
-                ip = ip.ipaddr
+                del self.ipMap[str(ip.ipaddr)]
+                continue
+
+            # If its a list, tuple, or set, iterate through it and remove each element from the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
+                # Try converting each element to an ipaddress object.
+                # If it succeeds, remove it from the IP address map
                 for element in ip:
                     try:
                         del self.ipMap[str(ipaddress.ip_address(element))]
+                    # If it fails, it is a network. Remove it from the IP network tree
                     except:
                         self.root = self.netAVL.delete(self.root, ipaddress.ip_network(element))
+                # Continue to the next input after iterating through the list
                 continue
+
+            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
+            # If it succeeds, remove it from the IP address map
             try:
                 del self.ipMap[str(ipaddress.ip_address(ip))]
             except:
+                # If it fails, it is a network. Remove it from the IP network tree
                 self.root = self.netAVL.delete(self.root, ipaddress.ip_network(ip))
+
+        # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()
 
     def contains(self, *ips):
+        # Iterate through all IPs passed through
         for ip in ips:
-            if ip is None:
-                return
-            if isinstance(ip, IPAddress):
-                ip = ip.ipaddr
+            # Flag to check if any of the IPs passed through are false
+            # If any are false, return false
             found = False
+            # If its an IP UDT, extract the UDTs value, check if its in the set, then go to the next iteration
+            if isinstance(ip, IPAddress):
+                # Check if its in the IP address hash map. Go to next iter if it is
+                if str(ip.ipaddr) in self.ipMap:
+                    continue
+                # Check if its in the IP network tree. Go to next iter if it is
+                if avl_search_ipAddr(self.root, ip.ipaddr) is True:
+                    continue
+                # If its not in the hash map or tree, its not found. Return false
+                if found is False:
+                    return False
+
+            # If its a list, tuple, or set, iterate through it and check if each element is in the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
+                # Try converting each element to an ipaddress object.
+                # If it succeeds, check if its in the set
                 for element in ip:
+                    # If its in the hash map or tree, its found. Go to the next iteration
+                    # Otherwise its not found. Return False
                     try:
                         ipAddr = ipaddress.ip_address(element)
                         if str(ipAddr) in self.ipMap:
@@ -325,11 +404,16 @@ class IPSet:
                             continue
                         if found is False:
                             return False
+                    # If it fails to convert, it is a network. Check if its in the IP network tree
                     except:
+                        # If found, continue to next iter. If not found, return false
                         if avl_search(self.root, ipaddress.ip_network(element)) is True:
                             continue
                         if found is False:
                             return False
+
+            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
+            # If it succeeds, check if its in the set. Return false if its not
             try:
                 ipAddr = ipaddress.ip_address(ip)
                 if str(ipAddr) in self.ipMap:
@@ -338,19 +422,25 @@ class IPSet:
                     continue
                 if found is False:
                     return False
+            # If it fails to convert, it is a network. Check if its in the IP network tree
             except:
+                # If found, continue to next iter. If not found, return false
                 if avl_search(self.root, ipaddress.ip_network(ip)) is True:
                     continue
                 if found is False:
                     return False
+
+        # If every item passed through is in the set, return true
         return True
 
+    # Remove every item from the set
     def clear(self):
         self.ipMap = {}
         self.root = None
         self.netAVL = AVL_Tree()
         update_sets()
 
+    # Show every address and network in the set
     def showAll(self):
         print('IP addresses:')
         for i in self.ipMap.keys():
@@ -358,11 +448,20 @@ class IPSet:
         print('IP networks:')
         self.netAVL.preOrder(self.root)
 
+    def returnAll(self):
+        set_list = []
+        for i in self.ipMap.keys():
+            set_list.append(i)
+        set_list.extend(self.netAVL.returnAll(self.root))
+        return set_list
+
+    # Check if the set is empty
     def isEmpty(self):
         if not self.ipMap and self.root is None:
             return True
         return False
 
+    # Get the set intersection
     def intersects(self, set2):
         intersectSet = IPSet()
         for i in self.ipMap.keys():
@@ -371,6 +470,7 @@ class IPSet:
         intersectSet.add(self.netAVL.netIntersect(self.root, set2))
         return intersectSet
 
+    # Get the union of 2 sets
     def union(self, set2):
         unionSet = IPSet()
         for i in self.ipMap.keys():
@@ -382,6 +482,7 @@ class IPSet:
         unionSet.add(set2.netAVL.netIntersect(set2.root, set2))
         return unionSet
 
+    # Get the diff of 2 sets
     def diff(self, set2):
         diffSet = IPSet()
         for i in self.ipMap.keys():
@@ -394,31 +495,40 @@ class IPSet:
         return diffSet
 
 
+# A hash map from string -> IPSet to use IPSets in UDFs
+# Can't pass objects to UDFs, so we pass set names and internally map set names to the actual object
+# This contains each IPSet registered for use in the UDFs
 class SetMap:
     def __init__(self):
         self.setMap = {}
 
+    # Add a set to the map by passing through its name and the object
     def add(self, set_to_add: IPSet, set_name: str):
         self.setMap[set_name] = set_to_add
         update_sets()
 
+    # Remove sets by passing their names
     def remove(self, *set_name):
         for i in set_name:
             del self.setMap[i]
         update_sets()
 
+    # Clear to whole set map
     def clear(self):
         self.setMap = {}
         update_sets()
 
+    # Check what sets are registered
     def setsAvailable(self):
         for x in self.setMap.keys():
             print(x)
 
 
+# The set map to use with the API
 SparkIPSets = SetMap()
 
 
+# Pass through a spark session variable to register all UDF functions
 def SparkIPInit(spark, log_level="WARN"):
     """Address Types"""
     # Multicast
@@ -475,6 +585,7 @@ def SparkIPInit(spark, log_level="WARN"):
     update_sets(spark, log_level)
 
 
+# Each time an IP Set is updated, its function has to re-register to reflect these changes
 def update_sets(spark=None, log_level="WARN"):
     """Set functions"""
     # Set contains
