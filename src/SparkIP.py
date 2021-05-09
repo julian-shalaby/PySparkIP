@@ -1,4 +1,4 @@
-from IPAddressUDT import *
+from .IPAddressUDT import *
 
 """
 NEED FUNCTIONS FOR:
