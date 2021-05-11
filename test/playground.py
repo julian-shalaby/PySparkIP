@@ -23,10 +23,6 @@ spark.sql("SELECT * FROM IPAddresses WHERE isPrivate(IPAddress)").show()
 print("isTeredo")
 spark.sql("SELECT * FROM IPAddresses WHERE isTeredo(IPAddress)").show()
 
-# Teredo
-print("Teredo")
-spark.sql("SELECT teredo(IPAddress) FROM IPAddresses").show()
-
 # Compressed
 print("Compressed")
 spark.sql("SELECT compressedIP(IPAddress) FROM IPAddresses").show()
@@ -68,4 +64,3 @@ spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'test2')").sho
 
 test3 = IPSet({"192.0.0.0", ip2, '10.1.128.0/17', "::", "8::9", '8.7.9.7', '192.0.2.0/26'})
 test3.add('192.0.2.0/26')
-print(test3.contains('10.1.128.255'))

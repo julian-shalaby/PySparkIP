@@ -3,26 +3,14 @@ import warnings
 
 """
 NEED FUNCTIONS FOR:
-    Checking if networks intersect
     Better IPv4/IPv6 interface stuff (like teredo)
-    IP network range format
+    IP network range format (would probably have to make a pull request to ipaddress owners)
 
 OTHER STUFF WE NEED:
-    Allow IPSets to input other IPSets for initialization, add, and remove
     Testing
-
-USEFUL LINKS:
-    (Features)
-    https://docs.python.org/3/library/ipaddress.html#network-objects
-    https://docs.google.com/document/d/1sLqO8XbOik4qhzOTKXiqHcFBwVOrdQnQVwyFSw5Jwc0/mobilebasic#
-
-    (Publishing)
-    https://spark-packages.org/artifact-help
-    https://github.com/databricks/sbt-spark-package
-    https://spark-packages.org
-    https://packaging.python.org/tutorials/packaging-projects/
-    https://realpython.com/pypi-publish-python-package/
+    Penalty system for diff, union, and intersection
 """
+
 
 # Helper function for ordering IP networks in the AVL tree
 # 1 = net1 > net2
@@ -63,6 +51,7 @@ class TreeNode(object):
         self.left = None
         self.right = None
         self.height = 1
+
 
 # AVL Tree to store IP networks
 # Sorting priority order: Network address -> Broadcast address -> Network version (v6 > v4)
@@ -560,12 +549,6 @@ def SparkIPInit(spark, log_level=None):
     spark.udf.register("compressedIP", lambda ip: ip.ipaddr.compressed, "string")
     # Exploded
     spark.udf.register("explodedIP", lambda ip: ip.ipaddr.exploded, "string")
-    # IPv4 Mapped
-    spark.udf.register("IPv4Mapped", lambda ip: ip.ipv4_mapped(), "string")
-    # 6to4
-    spark.udf.register("sixtofour", lambda ip: ip.sixtofour(), "string")
-    # Teredo
-    spark.udf.register("teredo", lambda ip: ip.teredo(), "string")
 
     """IP as a number"""""
     # spark only supports long correctly. only use on IPv4
@@ -597,3 +580,10 @@ def update_sets(spark=None, log_level="WARN"):
     update_sets.spark.sparkContext.setLogLevel("FATAL")
     update_sets.spark.udf.register("setContains", lambda ip, ip_set: SparkIPSets.setMap[ip_set].contains(ip), "boolean")
     update_sets.spark.sparkContext.setLogLevel(log_level)
+
+
+"""Other functions (not for SparkSQL use)"""
+def nets_intersect(net1, net2):
+    if net1.network_address <= net2.broadcast_address and net1.broadcast_address >= net2.network_address:
+        return True
+    return False
