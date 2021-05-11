@@ -1,4 +1,5 @@
 from .IPAddressUDT import *
+import warnings
 
 """
 NEED FUNCTIONS FOR:
@@ -9,7 +10,6 @@ NEED FUNCTIONS FOR:
 OTHER STUFF WE NEED:
     Allow IPSets to input other IPSets for initialization, add, and remove
     Testing
-    Ignore SimpleFunctionRegistry warning without messing with logLevel
 
 USEFUL LINKS:
     (Features)
@@ -529,7 +529,10 @@ SparkIPSets = SetMap()
 
 
 # Pass through a spark session variable to register all UDF functions
-def SparkIPInit(spark, log_level="WARN"):
+def SparkIPInit(spark, log_level=None):
+    if log_level is None:
+        warnings.warn("No log level specified for SparkIP. Setting log level to WARN.", Warning)
+        log_level = "WARN"
     """Address Types"""
     # Multicast
     spark.udf.register("isMulticast", lambda ip: ip.ipaddr.is_multicast, "boolean")
