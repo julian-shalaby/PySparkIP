@@ -16,7 +16,7 @@ class IPAddressUDT(UserDefinedType):
         return '__main__'
 
     def serialize(self, obj):
-        return obj.addr
+        return str(obj.ipaddr)
 
     def deserialize(self, datum):
         return IPAddress(datum)
@@ -26,7 +26,6 @@ class IPAddress:
     __UDT__ = IPAddressUDT()
 
     def __init__(self, addr):
-        self.addr = addr
         self.ipaddr = ipaddress.ip_address(addr)
 
     def is_ipv4_mapped(self):
