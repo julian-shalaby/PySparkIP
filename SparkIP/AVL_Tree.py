@@ -16,9 +16,9 @@ class AVL_Tree(object):
     @staticmethod
     def compareNetworks(net1, net2):
         if net1 is None:
-            return 1
-        if net2 is None:
             return -1
+        if net2 is None:
+            return 1
 
         netAddr1 = int(net1.network_address)
         netAddr2 = int(net2.network_address)
