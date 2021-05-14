@@ -221,8 +221,8 @@ class IPSet:
         for i in set2.ipMap.keys():
             unionSet.add(i)
 
-        unionSet.add(self.netAVL.netIntersect(self.root, self))
-        unionSet.add(set2.netAVL.netIntersect(set2.root, set2))
+        unionSet.add(self.netAVL.returnAll(self.root))
+        unionSet.add(set2.netAVL.returnAll(set2.root))
         return unionSet
 
     # Get the diff of 2 sets
@@ -232,7 +232,7 @@ class IPSet:
             if set2.contains(i) is False:
                 diffSet.add(i)
 
-        diffSet.add(self.netAVL.netIntersect(self.root, self))
+        diffSet.add(self.netAVL.returnAll(self.root))
         diffSet.remove(self.netAVL.netIntersect(self.root, set2))
 
         return diffSet
