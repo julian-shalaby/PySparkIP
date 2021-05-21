@@ -114,67 +114,30 @@ class IPSet:
         # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()
 
-    def contains(self, *ips):
-        # Iterate through all IPs passed through
-        for ip in ips:
-            # Flag to check if any of the IPs passed through are false
-            # If any are false, return false
-            found = False
-            # If its an IP UDT, extract the UDTs value, check if its in the set, then go to the next iteration
-            if isinstance(ip, IPAddress):
-                # Check if its in the IP address hash map. Go to next iter if it is
-                if str(ip.ipaddr) in self.ipMap:
-                    continue
-                # Check if its in the IP network tree. Go to next iter if it is
-                if AVL_Tree.avl_search_ipAddr(self.root, ip.ipaddr) is True:
-                    continue
-                # If its not in the hash map or tree, its not found. Return false
-                if found is False:
-                    return False
-
-            # If its a list, tuple, or set, iterate through it and check if each element is in the set
-            if type(ip) is list or type(ip) is tuple or type(ip) is set:
-                # Try converting each element to an ipaddress object.
-                # If it succeeds, check if its in the set
-                for element in ip:
-                    # If its in the hash map or tree, its found. Go to the next iteration
-                    # Otherwise its not found. Return False
-                    try:
-                        ipAddr = ipaddress.ip_address(element)
-                        if str(ipAddr) in self.ipMap:
-                            continue
-                        if AVL_Tree.avl_search_ipAddr(self.root, ipAddr) is True:
-                            continue
-                        if found is False:
-                            return False
-                    # If it fails to convert, it is a network. Check if its in the IP network tree
-                    except:
-                        # If found, continue to next iter. If not found, return false
-                        if AVL_Tree.avl_search(self.root, ipaddress.ip_network(element)) is True:
-                            continue
-                        if found is False:
-                            return False
-
-            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
-            # If it succeeds, check if its in the set. Return false if its not
+    def contains(self, *ip):
+        if isinstance(ip, IPAddress):
+            # Check if its in the IP address hash map
+            if str(ip.ipaddr) in self.ipMap:
+                return True
+            # Check if its in the IP network tree
+            if AVL_Tree.avl_search_ipAddr(self.root, ip.ipaddr) is True:
+                return True
+            return False
+        else:
+            # If its not a UDT, try converting it to an ipaddress object.
+            # If it succeeds, check if its in the set.
             try:
                 ipAddr = ipaddress.ip_address(ip)
                 if str(ipAddr) in self.ipMap:
-                    continue
+                    return True
                 if AVL_Tree.avl_search_ipAddr(self.root, ipAddr) is True:
-                    continue
-                if found is False:
-                    return False
+                    return True
             # If it fails to convert, it is a network. Check if its in the IP network tree
             except:
                 # If found, continue to next iter. If not found, return false
                 if AVL_Tree.avl_search(self.root, ipaddress.ip_network(ip)) is True:
-                    continue
-                if found is False:
-                    return False
-
-        # If every item passed through is in the set, return true
-        return True
+                    return True
+            return False
 
     # Remove every item from the set
     def clear(self):
