@@ -1,6 +1,7 @@
-from .IPAddressUDT import *
-from .AVL_Tree import *
+from .IPAddressUDT import IPAddress
+from .AVL_Tree import AVL_Tree
 import warnings
+import ipaddress
 
 
 class IPSet:
@@ -12,51 +13,61 @@ class IPSet:
 
         # Iterate through all IPs passed through
         for ip in ips:
-            # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
+            # If its an IP UDT, extract the UDTs value, add it to the map,
+            # then go to the next iteration
             if isinstance(ip, IPAddress):
                 self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
                 continue
 
-            # If its an IPSet, extract all of its values to a list and add it to the set
-            if isinstance(ip, IPSet):
+            # If its an IPSet, extract all of its values to a list and add it
+            # to the set
+            elif isinstance(ip, IPSet):
                 ip = ip.returnAll()
 
-            # If its a list, tuple, or set, iterate through it and add each element to the set
-            if type(ip) is list or type(ip) is tuple or type(ip) is set:
+            # If its a list, tuple, or set, iterate through it and add each
+            # element to the set
+            elif type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     # Try converting each element to an ipaddress object.
                     # If it succeeds, add it to the IP address map
                     try:
                         ipaddr = ipaddress.ip_address(element)
                         self.ipMap[str(ipaddr)] = int(ipaddr)
-                    # If it fails, it is a network. Add it to the IP network tree
-                    except:
-                        self.root = self.netAVL.insert(self.root, ipaddress.ip_network(element))
+                    # If it fails, it is a network.
+                    # Add it to the IP network tree
+                    except Exception:
+                        self.root = self.netAVL.insert(
+                            self.root,
+                            ipaddress.ip_network(element)
+                        )
                 # Continue to the next input after iterating through the list
                 continue
 
-            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
-            # If it succeeds, add it to the IP address map
+            # If its not a list, tuple, set, or UDT, try converting it to an
+            # ipaddress object. If it succeeds, add it to the IP address map
             try:
                 ipaddr = ipaddress.ip_address(ip)
                 self.ipMap[str(ipaddr)] = int(ipaddr)
             # If it fails, it is a network. Add it to the IP network tree
-            except:
+            except Exception:
                 self.root = self.netAVL.insert(self.root, ipaddress.ip_network(ip))
 
     def add(self, *ips):
         # Iterate through all IPs passed through
         for ip in ips:
-            # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
+            # If its an IP UDT, extract the UDTs value, add it to the map,
+            # then go to the next iteration
             if isinstance(ip, IPAddress):
                 self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
                 continue
 
-            # If its an IPSet, extract all of its values to a list and add it to the set
+            # If its an IPSet, extract all of its values to a list and add it
+            # to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
 
-            # If its a list, tuple, or set, iterate through it and add each element to the set
+            # If its a list, tuple, or set, iterate through it and add each
+            # element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 # Try converting each element to an ipaddress object.
                 # If it succeeds, add it to the IP address map
@@ -64,33 +75,43 @@ class IPSet:
                     try:
                         ipaddr = ipaddress.ip_address(element)
                         self.ipMap[str(ipaddr)] = int(ipaddr)
-                    # If it fails, it is a network. Add it to the IP network tree
-                    except:
-                        self.root = self.netAVL.insert(self.root, ipaddress.ip_network(element))
+                    # If it fails, it is a network. Add it to
+                    # the IP network tree
+                    except Exception:
+                        self.root = self.netAVL.insert(
+                            self.root,
+                            ipaddress.ip_network(element)
+                        )
                 # Continue to the next input after iterating through the list
                 continue
 
-            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
-            # If it succeeds, add it to the IP address map
+            # If its not a list, tuple, set, or UDT, try converting it to an
+            # ipaddress object. If it succeeds, add it to the IP address map
             try:
                 ipaddr = ipaddress.ip_address(ip)
                 self.ipMap[str(ipaddr)] = int(ipaddr)
             # If it fails, it is a network. Add it to the IP network tree
-            except:
-                self.root = self.netAVL.insert(self.root, ipaddress.ip_network(ip))
+            except Exception:
+                self.root = self.netAVL.insert(
+                    self.root,
+                    ipaddress.ip_network(ip)
+                )
 
-        # Re-register the IPSet UDF or else this set won't be updated in the UDF
+        # Re-register the IPSet UDF or else this
+        # set won't be updated in the UDF
         update_sets()
 
     def remove(self, *ips):
         # Iterate through all IPs passed through
         for ip in ips:
-            # If its an IP UDT, extract the UDTs value, remove it to from map, then go to the next iteration
+            # If its an IP UDT, extract the UDTs value, remove it to from map,
+            # then go to the next iteration
             if isinstance(ip, IPAddress):
                 del self.ipMap[str(ip.ipaddr)]
                 continue
 
-            # If its a list, tuple, or set, iterate through it and remove each element from the set
+            # If its a list, tuple, or set, iterate through it
+            # and remove each element from the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 # Try converting each element to an ipaddress object.
                 # If it succeeds, remove it from the IP address map
@@ -98,18 +119,25 @@ class IPSet:
                     try:
                         del self.ipMap[str(ipaddress.ip_address(element))]
                     # If it fails, it is a network. Remove it from the IP network tree
-                    except:
-                        self.root = self.netAVL.delete(self.root, ipaddress.ip_network(element))
+                    except Exception:
+                        self.root = self.netAVL.delete(
+                            self.root,
+                            ipaddress.ip_network(element)
+                        )
                 # Continue to the next input after iterating through the list
                 continue
 
-            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
-            # If it succeeds, remove it from the IP address map
+            # If its not a list, tuple, set, or UDT, try converting it to an
+            # ipaddress object. If it succeeds, remove it from the IP address map
             try:
                 del self.ipMap[str(ipaddress.ip_address(ip))]
-            except:
-                # If it fails, it is a network. Remove it from the IP network tree
-                self.root = self.netAVL.delete(self.root, ipaddress.ip_network(ip))
+            except Exception:
+                # If it fails, it is a network.
+                # Remove it from the IP network tree
+                self.root = self.netAVL.delete(
+                    self.root,
+                    ipaddress.ip_network(ip)
+                )
 
         # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()
@@ -148,7 +176,7 @@ class IPSet:
                         if found is False:
                             return False
                     # If it fails to convert, it is a network. Check if its in the IP network tree
-                    except:
+                    except Exception:
                         # If found, continue to next iter. If not found, return false
                         if AVL_Tree.avl_search(self.root, ipaddress.ip_network(element)) is True:
                             continue
@@ -166,7 +194,7 @@ class IPSet:
                 if found is False:
                     return False
             # If it fails to convert, it is a network. Check if its in the IP network tree
-            except:
+            except Exception:
                 # If found, continue to next iter. If not found, return false
                 if AVL_Tree.avl_search(self.root, ipaddress.ip_network(ip)) is True:
                     continue
@@ -337,7 +365,7 @@ def update_sets(spark=None, log_level="WARN"):
 
 
 """Other functions (not for SparkSQL use)"""
-def nets_intersect(net1, net2):
+def nets_intersect(net1, net2):  # noqa: E302
     net1 = ipaddress.ip_network(net1)
     net2 = ipaddress.ip_network(net2)
     if net1.network_address <= net2.broadcast_address and net1.broadcast_address >= net2.network_address:
