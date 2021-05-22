@@ -1,11 +1,11 @@
 [![license](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://github.com/jshalaby510/PySparkIP/blob/main/LICENSE)
 
 # PySparkIP
-An API for working with IP addresses in Apache Spark.
+An API for working with IP addresses in Apache Spark. Built on top of [ipaddress](https://docs.python.org/3/library/ipaddress.html).
 
 ## Usage
   * pip install PySparkIP
-  * from SparkIP import *
+  * from PySparkIP import *
 
 ## License
 This project is licensed under the Apache License. Please see [LICENSE](LICENSE) file for more details.
