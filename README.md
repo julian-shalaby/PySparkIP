@@ -4,133 +4,84 @@
 An API for working with IP addresses in Apache Spark.
 
 ## Usage
-  * pip install -i https://test.pypi.org/simple/ PySparkIP==1.0.2
-  * from SparkIP.SparkIP import *
+  * pip install PySparkIP
+  * from SparkIP import *
 
 ## License
 This project is licensed under the Apache License. Please see [LICENSE](LICENSE) file for more details.
 
 ## Tutorial
 ### Initialize
-Before using, initialize PySparkIP by passing `spark` to `SparkIPInit`
+Before using in SparkSQL, initialize PySparkIP by passing `spark` to `SparkIPInit`.
 ```python
 from pyspark.sql import SparkSession
-from src.SparkIP.SparkIP import *
+from SparkIP import *
 
 spark = SparkSession.builder.appName("ipTest").getOrCreate()
 SparkIPInit(spark)
 ```
 
-### SparkSQL Functions
-**Check address types**
+### Functions
+**Check address type**
 ```python
 # Multicast
 spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)")
+ipDF.select('*').filter("isMulticast(IPAddress)")
+ipDF.select('*').withColumn("IPColumn", isMulticast("IPAddress"))
 
-# Private
-spark.sql("SELECT * FROM IPAddresses WHERE isPrivate(IPAddress)")
-
-# Global
-spark.sql("SELECT * FROM IPAddresses WHERE isGlobal(IPAddress)")
-
-# Unspecified
-spark.sql("SELECT * FROM IPAddresses WHERE isUnspecified(IPAddress)")
-
-# Reserved
-spark.sql("SELECT * FROM IPAddresses WHERE isReserved(IPAddress)")
-
-# Loopback
-spark.sql("SELECT * FROM IPAddresses WHERE isLoopback(IPAddress)")
-
-# Link Local
-spark.sql("SELECT * FROM IPAddresses WHERE isLinkLocal(IPAddress)")
-
-# IPv4 Mapped
-spark.sql("SELECT * FROM IPAddresses WHERE isIPv4Mapped(IPAddress)")
-
-# 6to4
-spark.sql("SELECT * FROM IPAddresses WHERE is6to4(IPAddress)")
-
-# Teredo
-spark.sql("SELECT * FROM IPAddresses WHERE isTeredo(IPAddress)")
-
-# IPv4
-spark.sql("SELECT * FROM IPAddresses WHERE isIPv4(IPAddress)")
-
-# IPv6
-spark.sql("SELECT * FROM IPAddresses WHERE isIPv6(IPAddress)")
+"""
+Other address types:
+    isPrivate, isGlobal, isUnspecified, isReserved, 
+    isLoopback, isLinkLocal, isIPv4Mapped, is6to4, 
+    isTeredo, isIPv4, isIPv6
+"""
 ```
 
 **Output address in different formats**
 ```python
 # Exploded
 spark.sql("SELECT explodedIP(IPAddress) FROM IPAddresses")
+ipDF.select(explodedIP("IPAddress"))
 
 # Compressed
 spark.sql("SELECT compressedIP(IPAddress) FROM IPAddresses")
-
-# Teredo
-spark.sql("SELECT teredo(IPAddress) FROM IPAddresses")
-
-# IPv4 Mapped
-spark.sql("SELECT IPv4Mapped(IPAddress) FROM IPAddresses")
-
-# 6to4
-spark.sql("SELECT sixtofour(IPAddress) FROM IPAddresses")
+ipDF.select(compressedIP("IPAddress"))
 ```
 
-**Sort or compare IP Addresses**
+**Sort IP Addresses**
 ```python
 # SparkSQL doesn't support values > LONG_MAX
-# To sort or compare IPv6 addresses, use ipAsBinary
-# To sort or compare IPv4 addresses, use either ipv4AsNum or ipAsBinary
-# But ipv4AsNum is more efficient
+# To sort IPv6 addresses, use ipAsBinary
+# To sort IPv4 addresses, use either ipv4AsNum or ipAsBinary, but ipv4AsNum is more efficient
 
-# Compare
-spark.sql("SELECT * FROM IPAddresses WHERE ipAsBinary(IPAddress) > ipAsBinary('192.209.45.194')")
-
-# Sort
+# Sort IPv4 and IPv6
 spark.sql("SELECT * FROM IPAddresses SORT BY ipAsBinary(IPAddress)")
+ipDF.select('*').sort(ipAsBinary("IPAddress"))
 
 # Sort ONLY IPv4
 spark.sql("SELECT * FROM IPv4 SORT BY ipv4AsNum(IPAddress)")
+ipv4DF.select('*').sort(ipv4AsNum("IPAddress"))
 ```
 
 **IP network functions**
 ```python
 # Network contains
 spark.sql("SELECT * FROM IPAddresses WHERE networkContains(IPAddress, '195.0.0.0/16')")
+ipDF.select('*').filter("networkContains(IPAddress, '195.0.0.0/16')")
+ipDF.select('*').withColumn("netCol", networkContains("192.0.0.0/16")("IPAddress"))
 ```
 
 **IP Set**
-#### Create IP Sets using:
-* IP addresses 
-```python
-ip = ipaddress.ip_address("189.118.188.64")
-ipSet = IPSet(ip)
-  ```
-* IP networks 
-```python
-net = ipaddress.ip_network('::/16')
-ipSet = IPSet(ip)
-  ```
-* strings representing IP addresses or IP networks 
+#### Create IP Sets:
 ```python
 ipStr = '192.0.0.0'
-ipSet = IPSet(ipStr)
-```
-* lists, tuples, or sets containing any/all of the above
-```python
-setOfIPs = {"192.0.0.0", "5422:6622:1dc6:366a:e728:84d4:257e:655a", "::"}
-ipSet = IPSet(setOfIPs)
-```
-* Or a mixture of any/all/none of the above!
-```python
-setOfIPs = {"192.0.0.0", "5422:6622:1dc6:366a:e728:84d4:257e:655a", "::"}
-ipStr = '192.0.0.0'
-net = ipaddress.ip_network('::/16')
-ip = ipaddress.ip_address("189.118.188.64")
-ipSet = IPSet(setOfIPs, '0.0.0.0', ipStr, net, ip)
+netStr = '225.0.0.0'
+ip_net_mix = ('::5', '5.0.0.0/8', '111.8.9.7')
+
+ipSet = IPSet(ipStr, '::/16', '2001::', netStr, ip_net_mix)
+ipSet2 = IPSet("6::", "9.0.8.7")
+ipSet3 = IPSet(ipSet, ipSet2)
+ipSet4 = IPSet()
 ```
 #### Register IP Sets for use in SparkSQL:
 Before using IP Sets in SparkSQL, register it by passing it to `SparkIPSets`
