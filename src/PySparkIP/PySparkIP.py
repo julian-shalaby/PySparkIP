@@ -1,9 +1,16 @@
-from .IPAddressUDT import IPAddress
-from .AVL_Tree import AVL_Tree
+from .IPAddressUDT import *
+from .AVL_Tree import *
 import warnings
-import ipaddress
 from pyspark.sql.types import BooleanType, LongType, StringType
 from pyspark.sql.functions import udf
+
+"""
+TODO:
+    1) Fix IPSet length tracking (if any IPs dont get added or removed that get passed through, they get counted
+    in length updates. Also IPSets, sets, lists, and tuples only get counted as 1 element)
+    2) Create an IPNetwork UDT
+    3) Maybe create an IPSet UDT (have to think this 1 over a bit)
+"""
 
 
 class IPSet:
@@ -11,65 +18,56 @@ class IPSet:
         # Hash map for IP addresses, AVL Tree for IP networks
         self.ipMap = {}
         self.netAVL = AVL_Tree()
-        self.root = None
+        self.__length = len(ips)
 
         # Iterate through all IPs passed through
         for ip in ips:
-            # If its an IP UDT, extract the UDTs value, add it to the map,
-            # then go to the next iteration
+            # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
             if isinstance(ip, IPAddress):
                 self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
                 continue
 
-            # If its an IPSet, extract all of its values to a list and add it
-            # to the set
-            elif isinstance(ip, IPSet):
+            # If its an IPSet, extract all of its values to a list and add it to the set
+            if isinstance(ip, IPSet):
                 ip = ip.returnAll()
 
-            # If its a list, tuple, or set, iterate through it and add each
-            # element to the set
-            elif type(ip) is list or type(ip) is tuple or type(ip) is set:
+            # If its a list, tuple, or set, iterate through it and add each element to the set
+            if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 for element in ip:
                     # Try converting each element to an ipaddress object.
                     # If it succeeds, add it to the IP address map
                     try:
                         ipaddr = ipaddress.ip_address(element)
                         self.ipMap[str(ipaddr)] = int(ipaddr)
-                    # If it fails, it is a network.
-                    # Add it to the IP network tree
-                    except Exception:
-                        self.root = self.netAVL.insert(
-                            self.root,
-                            ipaddress.ip_network(element)
-                        )
+                    # If it fails, it is a network. Add it to the IP network tree
+                    except:
+                        self.netAVL.insert(ipaddress.ip_network(element))
                 # Continue to the next input after iterating through the list
                 continue
 
-            # If its not a list, tuple, set, or UDT, try converting it to an
-            # ipaddress object. If it succeeds, add it to the IP address map
+            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
+            # If it succeeds, add it to the IP address map
             try:
                 ipaddr = ipaddress.ip_address(ip)
                 self.ipMap[str(ipaddr)] = int(ipaddr)
             # If it fails, it is a network. Add it to the IP network tree
-            except Exception:
-                self.root = self.netAVL.insert(self.root, ipaddress.ip_network(ip))
+            except:
+                self.netAVL.insert(ipaddress.ip_network(ip))
 
     def add(self, *ips):
+        self.__length += len(ips)
         # Iterate through all IPs passed through
         for ip in ips:
-            # If its an IP UDT, extract the UDTs value, add it to the map,
-            # then go to the next iteration
+            # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
             if isinstance(ip, IPAddress):
                 self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
                 continue
 
-            # If its an IPSet, extract all of its values to a list and add it
-            # to the set
+            # If its an IPSet, extract all of its values to a list and add it to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
 
-            # If its a list, tuple, or set, iterate through it and add each
-            # element to the set
+            # If its a list, tuple, or set, iterate through it and add each element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 # Try converting each element to an ipaddress object.
                 # If it succeeds, add it to the IP address map
@@ -77,69 +75,61 @@ class IPSet:
                     try:
                         ipaddr = ipaddress.ip_address(element)
                         self.ipMap[str(ipaddr)] = int(ipaddr)
-                    # If it fails, it is a network. Add it to
-                    # the IP network tree
-                    except Exception:
-                        self.root = self.netAVL.insert(
-                            self.root,
-                            ipaddress.ip_network(element)
-                        )
+                    # If it fails, it is a network. Add it to the IP network tree
+                    except:
+                        self.netAVL.insert(ipaddress.ip_network(element))
                 # Continue to the next input after iterating through the list
                 continue
 
-            # If its not a list, tuple, set, or UDT, try converting it to an
-            # ipaddress object. If it succeeds, add it to the IP address map
+            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
+            # If it succeeds, add it to the IP address map
             try:
                 ipaddr = ipaddress.ip_address(ip)
                 self.ipMap[str(ipaddr)] = int(ipaddr)
             # If it fails, it is a network. Add it to the IP network tree
-            except Exception:
-                self.root = self.netAVL.insert(
-                    self.root,
-                    ipaddress.ip_network(ip)
-                )
+            except:
+                self.netAVL.insert(ipaddress.ip_network(ip))
 
-        # Re-register the IPSet UDF or else this
-        # set won't be updated in the UDF
+        # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()
 
     def remove(self, *ips):
+        self.__length -= len(ips)
         # Iterate through all IPs passed through
         for ip in ips:
-            # If its an IP UDT, extract the UDTs value, remove it to from map,
-            # then go to the next iteration
+            # If its an IP UDT, extract the UDTs value, remove it to from map, then go to the next iteration
             if isinstance(ip, IPAddress):
                 del self.ipMap[str(ip.ipaddr)]
                 continue
 
-            # If its a list, tuple, or set, iterate through it
-            # and remove each element from the set
+            # If its an IPSet, extract all of its values to a list and add it to the set
+            if isinstance(ip, IPSet):
+                ip = ip.returnAll()
+
+            # If its a list, tuple, or set, iterate through it and remove each element from the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 # Try converting each element to an ipaddress object.
-                # If it succeeds, remove it from the IP address map
                 for element in ip:
                     try:
                         del self.ipMap[str(ipaddress.ip_address(element))]
-                    # If it fails, it is a network. Remove it from the IP network tree
-                    except Exception:
-                        self.root = self.netAVL.delete(
-                            self.root,
-                            ipaddress.ip_network(element)
-                        )
+                    except:
+                        pass
+                    try:
+                        self.netAVL.delete(ipaddress.ip_network(element))
+                    except:
+                        pass
                 # Continue to the next input after iterating through the list
                 continue
 
-            # If its not a list, tuple, set, or UDT, try converting it to an
-            # ipaddress object. If it succeeds, remove it from the IP address map
+            # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
             try:
                 del self.ipMap[str(ipaddress.ip_address(ip))]
-            except Exception:
-                # If it fails, it is a network.
-                # Remove it from the IP network tree
-                self.root = self.netAVL.delete(
-                    self.root,
-                    ipaddress.ip_network(ip)
-                )
+            except:
+                pass
+            try:
+                self.netAVL.delete(ipaddress.ip_network(ip))
+            except:
+                pass
 
         # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()
@@ -150,7 +140,7 @@ class IPSet:
             if str(ip.ipaddr) in self.ipMap:
                 return True
             # Check if its in the IP network tree
-            if AVL_Tree.avl_search_ipAddr(self.root, ip.ipaddr) is True:
+            if self.netAVL.avl_search_ipAddr(ip.ipaddr) is True:
                 return True
             return False
         else:
@@ -160,20 +150,19 @@ class IPSet:
                 ipAddr = ipaddress.ip_address(ip)
                 if str(ipAddr) in self.ipMap:
                     return True
-                if AVL_Tree.avl_search_ipAddr(self.root, ipAddr) is True:
+                if self.netAVL.avl_search_ipAddr(ipAddr) is True:
                     return True
             # If it fails to convert, it is a network. Check if its in the IP network tree
-            except Exception:
+            except:
                 # If found, continue to next iter. If not found, return false
-                if AVL_Tree.avl_search(self.root, ipaddress.ip_network(ip)) is True:
+                if self.netAVL.avl_search(ipaddress.ip_network(ip)) is True:
                     return True
             return False
 
     # Remove every item from the set
     def clear(self):
         self.ipMap = {}
-        self.root = None
-        self.netAVL = AVL_Tree()
+        self.netAVL.root = None
         update_sets()
 
     # Show every address and network in the set
@@ -182,52 +171,44 @@ class IPSet:
         for i in self.ipMap.keys():
             print(i)
         print('IP networks:')
-        self.netAVL.preOrder(self.root)
+        self.netAVL.preOrder()
 
     def returnAll(self):
         set_list = []
         for i in self.ipMap.keys():
             set_list.append(i)
-        set_list.extend(self.netAVL.returnAll(self.root))
+        set_list.extend(self.netAVL.returnAll())
         return set_list
 
     # Check if the set is empty
     def isEmpty(self):
-        if not self.ipMap and self.root is None:
+        if not self.ipMap and self.netAVL.root is None:
             return True
         return False
 
     # Get the set intersection
-    def intersects(self, set2):
+    def intersection(self, set2):
         intersectSet = IPSet()
-        for i in self.ipMap.keys():
-            if set2.contains(i):
-                intersectSet.add(i)
-        intersectSet.add(self.netAVL.netIntersect(self.root, set2))
+        if len(self) <= len(set2):
+            for i in self.ipMap.keys():
+                if set2.contains(i):
+                    intersectSet.add(i)
+            intersectSet.add(self.netAVL.netIntersect(set2))
+        else:
+            for i in set2.ipMap.keys():
+                if self.contains(i):
+                    intersectSet.add(i)
+            intersectSet.add(set2.netAVL.netIntersect(self))
         return intersectSet
 
     # Get the union of 2 sets
     def union(self, set2):
-        unionSet = IPSet()
-        for i in self.ipMap.keys():
-            unionSet.add(i)
-        for i in set2.ipMap.keys():
-            unionSet.add(i)
-
-        unionSet.add(self.netAVL.returnAll(self.root))
-        unionSet.add(set2.netAVL.returnAll(set2.root))
-        return unionSet
+        return IPSet(self, set2)
 
     # Get the diff of 2 sets
     def diff(self, set2):
-        diffSet = IPSet()
-        for i in self.ipMap.keys():
-            if set2.contains(i) is False:
-                diffSet.add(i)
-
-        diffSet.add(self.netAVL.returnAll(self.root))
-        diffSet.remove(self.netAVL.netIntersect(self.root, set2))
-
+        diffSet = self
+        diffSet.remove(diffSet.intersection(set2))
         return diffSet
 
     def __eq__(self, set2):
@@ -239,6 +220,9 @@ class IPSet:
         if self.returnAll() != set2.returnAll():
             return True
         return False
+
+    def __len__(self):
+        return self.__length
 
 
 # A hash map from string -> IPSet to use IPSets in UDFs
@@ -354,30 +338,20 @@ is6to4 = udf(lambda ip: ip.is_6to4(), BooleanType())
 isTeredo = udf(lambda ip: ip.is_teredo(), BooleanType())
 compressedIP = udf(lambda ip: ip.ipaddr.compressed, StringType())
 explodedIP = udf(lambda ip: ip.ipaddr.exploded, StringType())
-
-
 """IP as a number"""""
 # spark only supports long correctly. only use on IPv4
 ipv4AsNum = udf(lambda ip: int(ip.ipaddr), LongType())
-
-
 """IP as a binary string"""""
 ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
-
-
 """Network functions"""
-def networkContains(ipnet):  # noqa 
-    return udf(lambda ip: ip.ipaddr in ipaddress.ip_network(ipnet))
-
-
+def networkContains(ipnet):
+    return udf(lambda ip: ip.ipaddr in ipaddress.ip_network(ipnet), BooleanType())
 """Other functions"""
 isIPv4 = udf(lambda ip: ip.ipaddr.version == 4, BooleanType())
 isIPv6 = udf(lambda ip: ip.ipaddr.version == 6, BooleanType())
-
-
 """IPSet functions"""
-def setContains(ipset):  # noqa
-    return udf(lambda ip: ipset.contains(ip))
+def setContains(ipset):
+    return udf(lambda ip: ipset.contains(ip), BooleanType())
 
 
 # Other functions (not for SparkSQL use)

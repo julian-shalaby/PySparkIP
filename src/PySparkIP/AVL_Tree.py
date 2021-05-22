@@ -10,7 +10,7 @@ class TreeNode(object):
 # AVL Tree to store IP networks
 class AVL_Tree(object):
     def __init__(self):
-        self.length = 0
+        self.root = None
 
     # Helper function for ordering IP networks in the AVL tree
     @staticmethod
@@ -41,14 +41,13 @@ class AVL_Tree(object):
                 else:
                     return 0
 
-    def insert(self, root, key):
+    def __insert(self, root, key):
         if not root:
-            self.length += 1
             return TreeNode(key)
         elif self.compareNetworks(key, root.val) == -1:
-            root.left = self.insert(root.left, key)
+            root.left = self.__insert(root.left, key)
         elif self.compareNetworks(key, root.val) == 1:
-            root.right = self.insert(root.right, key)
+            root.right = self.__insert(root.right, key)
         else:
             return root
 
@@ -73,39 +72,40 @@ class AVL_Tree(object):
 
         return root
 
+    def insert(self, key):
+        self.root = self.__insert(self.root, key)
+
     def getMinValueNode(self, root):
         if root is None or root.left is None:
             return root
 
         return self.getMinValueNode(root.left)
 
-    def delete(self, root, key):
+    def __delete(self, root, key):
         if not root:
             return root
 
         elif self.compareNetworks(key, root.val) == -1:
-            root.left = self.delete(root.left, key)
+            root.left = self.__delete(root.left, key)
 
         elif self.compareNetworks(key, root.val) == 1:
-            root.right = self.delete(root.right, key)
+            root.right = self.__delete(root.right, key)
 
         else:
             if root.left is None:
                 temp = root.right
                 root = None
-                self.length -= 1
                 return temp
 
             elif root.right is None:
                 temp = root.left
                 root = None
-                self.length -= 1
                 return temp
 
             temp = self.getMinValueNode(root.right)
             root.val = temp.val
-            root.right = self.delete(root.right,
-                                     temp.val)
+            root.right = self.__delete(root.right,
+                                       temp.val)
 
         if root is None:
             return root
@@ -130,6 +130,9 @@ class AVL_Tree(object):
             return self.leftRotate(root)
 
         return root
+
+    def delete(self, key):
+        self.root = self.__delete(self.root, key)
 
     def leftRotate(self, z):
         y = z.right
@@ -168,15 +171,18 @@ class AVL_Tree(object):
             return 0
         return self.getHeight(root.left) - self.getHeight(root.right)
 
-    def preOrder(self, root):
+    def __preOrder(self, root):
         if not root:
             return
         print(f"{root.val}")
-        self.preOrder(root.left)
-        self.preOrder(root.right)
+        self.__preOrder(root.left)
+        self.__preOrder(root.right)
 
-    def netIntersect(self, root, set2):
-        current = root
+    def preOrder(self):
+        self.__preOrder(self.root)
+
+    def netIntersect(self, set2):
+        current = self.root
         stack = []
         intersectList = []
         while True:
@@ -192,8 +198,8 @@ class AVL_Tree(object):
                 break
         return intersectList
 
-    def returnAll(self, root):
-        current = root
+    def returnAll(self):
+        current = self.root
         stack = []
         returnList = []
         while True:
@@ -209,25 +215,29 @@ class AVL_Tree(object):
         return returnList
 
     # To check if an IP network is in the tree
-    @staticmethod
-    def avl_search(root, key):
+    def __avl_search(self, root, key):
         if root is None or key is None:
             return False
         elif AVL_Tree.compareNetworks(key, root.val) == -1:
-            return AVL_Tree.avl_search(root.left, key)
+            return self.__avl_search(root.left, key)
         elif AVL_Tree.compareNetworks(key, root.val) == 1:
-            return AVL_Tree.avl_search(root.right, key)
+            return self.__avl_search(root.right, key)
         else:
             return True
 
+    def avl_search(self, key):
+        return self.__avl_search(self.root, key)
+
     # To check if an IP address is in the tree
-    @staticmethod
-    def avl_search_ipAddr(root, key):
+    def __avl_search_ipAddr(self, root, key):
         if root is None or key is None:
             return False
         elif key in root.val:
             return True
         elif int(key) < int(root.val.network_address):
-            return AVL_Tree.avl_search_ipAddr(root.left, key)
+            return self.__avl_search_ipAddr(root.left, key)
         elif int(key) > int(root.val.network_address):
-            return AVL_Tree.avl_search_ipAddr(root.right, key)
+            return self.__avl_search_ipAddr(root.right, key)
+
+    def avl_search_ipAddr(self, key):
+        return self.__avl_search_ipAddr(self.root, key)
