@@ -8,7 +8,7 @@ from pyspark.sql.functions import udf
 TODO:
     1) Fix IPSet length tracking (if any IPs dont get added or removed that get passed through, they get counted
     in length updates. Also IPSets, sets, lists, and tuples only get counted as 1 element)
-    2) Create an IPNetwork UDT
+    2) Create an IPNetwork UDT (have to think this 1 over a bit)
     3) Maybe create an IPSet UDT (have to think this 1 over a bit)
 """
 
@@ -174,11 +174,11 @@ class IPSet:
         self.netAVL.preOrder()
 
     def returnAll(self):
-        set_list = []
+        set_set = set()
         for i in self.ipMap.keys():
-            set_list.append(i)
-        set_list.extend(self.netAVL.returnAll())
-        return set_list
+            set_set.add(i)
+        set_set.update(self.netAVL.returnAll())
+        return set_set
 
     # Check if the set is empty
     def isEmpty(self):
