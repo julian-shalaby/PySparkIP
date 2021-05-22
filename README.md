@@ -13,12 +13,16 @@ This project is licensed under the Apache License. Please see [LICENSE](LICENSE)
 ## Tutorial
 ### Initialize
 Before using in SparkSQL, initialize PySparkIP by passing `spark` to `SparkIPInit`.
+<br/> 
+Optionally pass the log level as well (if left unspecified, `SparkIPInit` resets 
+the log level to "WARN" and gives a warning message).
 ```python
 from pyspark.sql import SparkSession
 from SparkIP import *
 
 spark = SparkSession.builder.appName("ipTest").getOrCreate()
 SparkIPInit(spark)
+# or SparkIPInit(spark, "DEBUG"), SparkIPInit(spark, "FATAL"), etc if specifying a log level
 ```
 
 ### Functions
