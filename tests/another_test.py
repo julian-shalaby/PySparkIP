@@ -79,3 +79,14 @@ class TestIPSet:
         ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
         ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
         assert ip_set.union(ip_set2) == IPSet("::", "5::", "1.0.0.0/8", "2001::", "192.0.0.0/16", "2::", "::/16")
+
+    def test_diff_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
+        assert ip_set.diff(ip_set2) == IPSet("2001::", "192.0.0.0/16")
+
+    def test_contains_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        assert ip_set.contains("5::")
+        assert ip_set.contains("192.0.5.0")
+        assert ip_set.contains("192.0.0.0/16")
