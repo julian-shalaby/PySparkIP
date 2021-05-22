@@ -174,11 +174,11 @@ class IPSet:
         self.netAVL.preOrder()
 
     def returnAll(self):
-        set_list = []
+        set_set = set()
         for i in self.ipMap.keys():
-            set_list.append(i)
-        set_list.extend(self.netAVL.returnAll())
-        return set_list
+            set_set.add(i)
+        set_set.update(self.netAVL.returnAll())
+        return set_set
 
     # Check if the set is empty
     def isEmpty(self):

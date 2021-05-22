@@ -1,0 +1,81 @@
+from PySparkIP.src.PySparkIP.PySparkIP import *
+import pytest
+
+
+class TestIPSet:
+    @pytest.fixture(autouse=True)
+    def before_all(request, mocker):
+        mocker.patch('PySparkIP.src.PySparkIP.PySparkIP.update_sets')
+
+    @pytest.fixture(autouse=True)
+    def ip_set(request):
+        return IPSet()
+
+    def test_add_ip_success(request, ip_set):
+        ip = IPAddress("192.168.0.1")
+        ip_set.add(ip)
+        assert ip_set.contains(ip)
+
+    def test_add_set_success(request, ip_set):
+        ip_set = IPSet()
+        ip = "192.168.0.1"
+        ip_set.add(ip)
+        assert ip_set.contains(ip)
+
+    def test_add_list_success(request, ip_set):
+        ip_set.add("192.168.0.1", "192.168.0.2")
+        assert ip_set.contains("192.168.0.1")
+        assert ip_set.contains("192.168.0.2")
+
+    def test_remove_ip_success(request, ip_set):
+        ip_set.add("192.168.0.1")
+        ip_set.remove("192.168.0.1")
+        assert ip_set.isEmpty()
+
+    def test_remove_set_success(request, ip_set):
+        ip_set.add(IPSet("192.168.0.1"))
+        # Fails here because i dont have IPSet as an option in remove. ill add that as a feature
+        # ip_set.remove(IPSet("192.168.0.1"))
+        # This works though
+        ip_set.remove("192.168.0.1")
+        assert ip_set.isEmpty()
+
+    def test_remove_list_success(request, ip_set):
+        ip_set.add("192.168.0.1", "192.168.0.2")
+        ip_set.remove("192.168.0.1", "192.168.0.2")
+        assert ip_set.isEmpty()
+
+    def test_clear_success(request, ip_set):
+        ip_set.add("192.168.0.1")
+        ip_set.clear()
+        assert ip_set.isEmpty()
+
+    def test_returnAll_success(request, ip_set):
+        ip_set.add("192.168.0.1")
+        result = ip_set.returnAll()
+
+        expected_list = ["192.168.0.1"]
+
+        for expected_item, result_item in zip(expected_list, result):
+            assert expected_item == result_item
+
+    def test_isEmpty_success(request, ip_set):
+        assert ip_set.isEmpty()
+
+    def test_equals_success(request, ip_set):
+        ip_set2 = IPSet(ip_set)
+        assert ip_set == ip_set2
+
+    def test_not_equals_success(request, ip_set):
+        ip_set2 = IPSet("::")
+        assert ip_set != ip_set2
+
+    def test_intersection_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
+        assert ip_set.intersection(ip_set2) == IPSet("::", "5::", "1.0.0.0/8")
+
+    def test_union_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
+        assert ip_set.union(ip_set2) == IPSet("::", "5::", "1.0.0.0/8", "2001::", "192.0.0.0/16", "2::", "::/16")
