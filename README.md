@@ -36,7 +36,7 @@ ipDF.createOrReplaceTempView("IPAddresses")
 # Multicast
 spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)")
 ipDF.select('*').filter("isMulticast(IPAddress)")
-ipDF.select('*').withColumn("IPColumn", isMulticast("IPAddress"))
+ipDF.select('*').filter(isMulticast("IPAddress"))
 
 """
 Other address types:
@@ -77,7 +77,7 @@ ipv4DF.select('*').sort(ipv4AsNum("IPAddress"))
 # Network contains
 spark.sql("SELECT * FROM IPAddresses WHERE networkContains(IPAddress, '195.0.0.0/16')")
 ipDF.select('*').filter("networkContains(IPAddress, '195.0.0.0/16')")
-ipDF.select('*').withColumn("netCol", networkContains("192.0.0.0/16")("IPAddress"))
+ipDF.select('*').filter(networkContains("192.0.0.0/16")("IPAddress"))
 ```
 
 **IP Set**
@@ -122,7 +122,7 @@ SparkIPSets.add(ipSet, 'ipSet')
 # Set Contains
 spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'ipSet')")
 ipDF.select('*').filter("setContains(IPAddress, 'ipSet')")
-ipDF.select('*').withColumn("setCol", setContains(ipSet)("IPAddress"))
+ipDF.select('*').filter(setContains(ipSet)("IPAddress"))
 
 # Show sets available to use
 SparkIPSets.setsAvailable()
