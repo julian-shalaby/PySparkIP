@@ -333,13 +333,13 @@ ipv4AsNum = udf(lambda ip: int(ip.ipaddr), LongType())
 ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
 """Network functions"""
 def networkContains(ipnet):
-    return udf(lambda ip: ip.ipaddr in ipaddress.ip_network(ipnet))
+    return udf(lambda ip: ip.ipaddr in ipaddress.ip_network(ipnet), BooleanType())
 """Other functions"""
 isIPv4 = udf(lambda ip: ip.ipaddr.version == 4, BooleanType())
 isIPv6 = udf(lambda ip: ip.ipaddr.version == 6, BooleanType())
 """IPSet functions"""
 def setContains(ipset):
-    return udf(lambda ip: ipset.contains(ip))
+    return udf(lambda ip: ipset.contains(ip), BooleanType())
 
 
 # Other functions (not for SparkSQL use)
