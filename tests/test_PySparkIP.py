@@ -1,6 +1,4 @@
-from PySparkIP.PySparkIP import IPSet
-from PySparkIP.IPAddressUDT import IPAddress
-import ipaddress
+from PySparkIP.PySparkIP import *
 import pytest
 
 
