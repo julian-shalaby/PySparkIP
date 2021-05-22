@@ -176,34 +176,37 @@ class AVL_Tree(object):
         self.preOrder(root.right)
 
     def netIntersect(self, root, set2):
-        if root is None:
-            return
-        temp = root
+        current = root
+        stack = []
         intersectList = []
         while True:
-            if set2.contains(temp.val):
-                intersectList.append(temp.val)
-
-            if temp.left is not None:
-                temp = temp.left
-            elif temp.right is not None:
-                temp = temp.right
+            if current is not None:
+                stack.append(current)
+                current = current.left
+            elif stack:
+                current = stack.pop()
+                if set2.contains(current.val):
+                    intersectList.append(current.val)
+                current = current.right
             else:
-                return intersectList
+                break
+        return intersectList
 
     def returnAll(self, root):
-        if root is None:
-            return
-        temp = root
-        return_list = []
+        current = root
+        stack = []
+        returnList = []
         while True:
-            return_list.append(temp.val)
-            if temp.left is not None:
-                temp = temp.left
-            elif temp.right is not None:
-                temp = temp.right
+            if current is not None:
+                stack.append(current)
+                current = current.left
+            elif stack:
+                current = stack.pop()
+                returnList.append(current.val)
+                current = current.right
             else:
-                return return_list
+                break
+        return returnList
 
     # To check if an IP network is in the tree
     @staticmethod
