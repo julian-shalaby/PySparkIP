@@ -1,6 +1,8 @@
 from .IPAddressUDT import *
 from .AVL_Tree import *
 import warnings
+from pyspark.sql.types import BooleanType, LongType, StringType
+from pyspark.sql.functions import udf
 
 
 class IPSet:
@@ -327,7 +329,7 @@ def SparkIPInit(spark, log_level=None):
 
 # Each time an IP Set is updated, its function has to re-register to reflect these changes
 def update_sets(spark=None, log_level="WARN"):
-    """Set functions"""
+    """IPSet functions"""
     # Set contains
     update_sets.spark = spark or update_sets.spark
     update_sets.log_level = log_level or update_sets.log_level
@@ -336,7 +338,38 @@ def update_sets(spark=None, log_level="WARN"):
     update_sets.spark.sparkContext.setLogLevel(log_level)
 
 
-"""Other functions (not for SparkSQL use)"""
+# Pure UDFs
+"""Address Types"""
+isMulticast = udf(lambda ip: ip.ipaddr.is_multicast, BooleanType())
+isGlobal = udf(lambda ip: ip.ipaddr.is_global, BooleanType())
+isPrivate = udf(lambda ip: ip.ipaddr.is_private, BooleanType())
+isUnspecified = udf(lambda ip: ip.ipaddr.is_unspecified, BooleanType())
+isReserved = udf(lambda ip: ip.ipaddr.is_reserved, BooleanType())
+isLoopback = udf(lambda ip: ip.ipaddr.is_loopback, BooleanType())
+isLinkLocal = udf(lambda ip: ip.ipaddr.is_link_local, BooleanType())
+isSiteLocal = udf(lambda ip: ip.ipaddr.is_site_local, BooleanType())
+isIPv4Mapped = udf(lambda ip: ip.is_ipv4_mapped(), BooleanType())
+is6to4 = udf(lambda ip: ip.is_6to4(), BooleanType())
+isTeredo = udf(lambda ip: ip.is_teredo(), BooleanType())
+compressedIP = udf(lambda ip: ip.ipaddr.compressed, StringType())
+explodedIP = udf(lambda ip: ip.ipaddr.exploded, StringType())
+"""IP as a number"""""
+# spark only supports long correctly. only use on IPv4
+ipv4AsNum = udf(lambda ip: int(ip.ipaddr), LongType())
+"""IP as a binary string"""""
+ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
+"""Network functions"""
+def networkContains(ipnet):
+    return udf(lambda ip: ip.ipaddr in ipaddress.ip_network(ipnet))
+"""Other functions"""
+isIPv4 = udf(lambda ip: ip.ipaddr.version == 4, BooleanType())
+isIPv6 = udf(lambda ip: ip.ipaddr.version == 6, BooleanType())
+"""IPSet functions"""
+def setContains(ipset):
+    return udf(lambda ip: ipset.contains(ip))
+
+
+# Other functions (not for SparkSQL use)
 def nets_intersect(net1, net2):
     net1 = ipaddress.ip_network(net1)
     net2 = ipaddress.ip_network(net2)
