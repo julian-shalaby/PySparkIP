@@ -112,6 +112,8 @@ SparkIPSets.add(ipSet, 'ipSet')
 #Use it!
 # Set Contains
 spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'ipSet')")
+ipDF.select('*').filter("setContains(IPAddress, 'ipSet')")
+ipDF.select('*').withColumn("setCol", setContains(ipSet)("IPAddress"))
 
 # Show sets available to use
 SparkIPSets.setsAvailable()
@@ -123,7 +125,7 @@ SparkIPSets.remove('ipSet')
 SparkIPSets.clear()
 ```
 
-#### IP Set functions (outside of SparkSQL):
+#### IP Set functions (outside SparkSQL):
 ```python
 ipSet = IPSet()
 
@@ -134,7 +136,7 @@ ipSet.add('0.0.0.0', '::/16')
 ipSet.remove('::/16')
 
 # Contains
-ipSet.contains('0.0.0.0', '::')
+ipSet.contains('0.0.0.0')
 
 # Clear
 ipSet.clear()
@@ -146,11 +148,17 @@ ipSet.showAll()
 ipSet2 = ('2001::', '::33', 'ffff::f')
 ipSet.union(ipSet2)
 
-# Intersects
+# Intersection
 ipSet.intersects(ipSet2)
 
 # Diff
 ipSet.diff(ipSet2)
+
+# Show All
+ipSet.showAll()
+
+# Return All
+ipSet.returnAll()
 
 # Is empty
 ipSet.isEmpty()
