@@ -239,6 +239,16 @@ class IPSet:
 
         return diffSet
 
+    def __eq__(self, set2):
+        if self.returnAll() == set2.returnAll():
+            return True
+        return False
+
+    def __ne__(self, set2):
+        if self.returnAll() != set2.returnAll():
+            return True
+        return False
+
 
 # A hash map from string -> IPSet to use IPSets in UDFs
 # Can't pass objects to UDFs, so we pass set names and internally map set names to the actual object
