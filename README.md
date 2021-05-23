@@ -191,4 +191,12 @@ ipSet.returnAll()
 
 # Is empty
 ipSet.isEmpty()
+
+# Compare IPSets
+ipSet2 = ('2001::', '::33', 'ffff::f')
+ipSet == ipSet2
+ipSet != ipSet2
+
+# Return the # of elements in the set
+len(ipSet)
 ```
