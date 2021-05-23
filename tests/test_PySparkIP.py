@@ -34,10 +34,7 @@ class TestIPSet:
 
     def test_remove_set_success(request, ip_set):
         ip_set.add(IPSet("192.168.0.1"))
-        # Fails here because i dont have IPSet as an option in remove. ill add that as a feature
-        # ip_set.remove(IPSet("192.168.0.1"))
-        # This works though
-        ip_set.remove("192.168.0.1")
+        ip_set.remove(IPSet("192.168.0.1"))
         assert ip_set.isEmpty()
 
     def test_remove_list_success(request, ip_set):
