@@ -52,6 +52,9 @@ class TestUDFs:
         spark.sql("SELECT * FROM IPAddresses WHERE networkContains(IPAddress, '195.0.0.0/16')").show()
         ipDF.select('*').filter(networkContains('195.0.0.0/16')("IPAddress")).show()
 
+        net1 = ipaddress.ip_network('::/10')
+        ipDF.select('*').filter(networkContains(net1)("IPAddress")).show()
+
     def test_isIPv4(request):
         # IPv4 check
         print("IPv4 check")

@@ -8,10 +8,8 @@ from pyspark.sql.functions import udf
 
 """
 TODO:
-    1) Fix IPSet length tracking (if any IPs dont get added or removed that get passed through, they get counted
-    in length updates. Also IPSets, sets, lists, and tuples only get counted as 1 element)
-    2) Create an IPNetwork UDT (have to think this 1 over a bit)
-    3) Maybe create an IPSet UDT (have to think this 1 over a bit)
+    1) Create an IPNetwork UDT (have to think this 1 over a bit)
+    2) Maybe create an IPSet UDT (have to think this 1 over a bit)
 """
 
 

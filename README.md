@@ -78,18 +78,38 @@ ipv4DF.select('*').sort(ipv4AsNum("IPAddress"))
 spark.sql("SELECT * FROM IPAddresses WHERE networkContains(IPAddress, '195.0.0.0/16')")
 ipDF.select('*').filter("networkContains(IPAddress, '195.0.0.0/16')")
 ipDF.select('*').withColumn("netCol", networkContains("192.0.0.0/16")("IPAddress"))
+
+# Or use ipaddress.ip_network objects
+net1 = ipaddress.ip_network('::/10')
+ipDF.select('*').filter(networkContains(net1)("IPAddress"))
 ```
 
 **IP Set**
-#### Create IP Sets:
+#### Create IP Sets (Note: This functionality also works with add and remove):
 ```python
+# Strings
 ipStr = '192.0.0.0'
 netStr = '225.0.0.0'
+# Tuples, lists, or sets
 ip_net_mix = ('::5', '5.0.0.0/8', '111.8.9.7')
+# ipaddress objects
+ipAddr = ipaddress.ip_address('::')
+# Dataframes
+ipMulticastDF = spark.sql("SELECT IPAddress FROM IPAddresses WHERE isMulticast(IPAddress)")
 
-ipSet = IPSet(ipStr, '::/16', '2001::', netStr, ip_net_mix)
-ipSet2 = IPSet("6::", "9.0.8.7")
+""" 
+Or use our predefined networks (multicastIPs, privateIPs, 
+ publicIPs, reservedIPs, unspecifiedIPs, linkLocalIPs, 
+ loopBackIPs, ipv4Mapped, ipv4Translated, ipv4ipv6Translated,
+ teredo, sixToFour, or siteLocal)
+ """
+
+# Mix them together
+ipSet = IPSet(ipStr, '::/16', '2001::', netStr, ip_net_mix, privateIPs)
+ipSet2 = IPSet("6::", "9.0.8.7", ipAddr, ipMulticastDF)
+# Use other IPSets
 ipSet3 = IPSet(ipSet, ipSet2)
+# Or just make an empty set
 ipSet4 = IPSet()
 ```
 #### Register IP Sets for use in SparkSQL:
