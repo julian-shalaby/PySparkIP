@@ -383,3 +383,21 @@ def nets_intersect(net1, net2):
     if net1.network_address <= net2.broadcast_address and net1.broadcast_address >= net2.network_address:
         return True
     return False
+
+
+multicastIPs = {'224.0.0.0/4', 'ff00::/8'}
+privateIPs = {'0.0.0.0/8', '10.0.0.0/8', '127.0.0.0/8', '169.254.0.0/16', '172.16.0.0/12', '192.0.0.0/29',
+              '192.0.0.170/31', '192.0.2.0/24', '192.168.0.0/16', '198.18.0.0/15', '198.51.100.0/24',
+              '203.0.113.0/24', '240.0.0.0/4', '255.255.255.255/32', '::1/128', '::/128', '::ffff:0:0/96',
+              '100::/64', '2001::/23', '2001:2::/48', '2001:db8::/32', '2001:10::/28', 'fc00::/7'}
+publicIPs = '100.64.0.0/10'
+reservedIPs = '240.0.0.0/4'
+unspecifiedIPs = {'0.0.0.0', '::'}
+linkLocalIPs = {'169.254.0.0/16', 'fe80::/10'}
+loopBackIPs = {'127.0.0.0/8', '::1'}
+ipv4Mapped = "::ffff:0:0/96"
+ipv4Translated = "::ffff:0:0:0/96"
+ipv4ipv6Translated = '64:ff9b::/96'
+teredo = '2001:0000:/32'
+sixToFour = '2002::/16'
+siteLocal = 'fc00::/7'

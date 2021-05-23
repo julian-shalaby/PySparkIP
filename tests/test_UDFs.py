@@ -65,26 +65,9 @@ class TestUDFs:
     def test_setContains(request):
         # Set contains
         print("Set Contains")
-        ipAddr = ipaddress.ip_address("189.118.188.64")
-        ip2 = ipaddress.ip_address('41.162.245.45')
-        ips = {"192.0.0.0", "5422:6622:1dc6:366a:e728:84d4:257e:655a", ip2, "::"}
-        test = IPSet(ipAddr, ips)
-        test2 = IPSet('192.0.2.0/26', '192.168.8.128/25', '10.0.1.0/24', "::", "8::9", '10.1.128.0/17')
-        SparkIPSets.add(test, 'test')
-        SparkIPSets.add(test2, 'test2')
-        spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'test')").show()
+        badIPs = IPSet(privateIPs, multicastIPs, '192.0.0.0/16', '::5')
+        SparkIPSets.add(badIPs, 'badIPs')
 
-        # Set contains on another set
-        print("Set contains on another set")
-        spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'test2')").show()
+        checkLog = IPSet(spark.sql("SELECT IPAddress FROM IPAddresses WHERE setContains(IPAddress, 'badIPs')"))
 
-        test3 = IPSet({"192.0.0.0", ip2, '10.1.128.0/17', "::", "8::9", '8.7.9.7', '192.0.2.0/26'},
-                      spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)").limit(8))
-        test3.add('192.0.2.0/26')
-        SparkIPSets.add(test3, 'test3')
-
-        ipDF.select('*').filter("setContains(IPAddress, 'test3')").show()
-        test2.add(ipDF.select('*').filter(setContains(test3)("IPAddress")))
-        test2.remove(ipDF.select('*'))
-
-        test3.showAll()
+        checkLog.showAll()
