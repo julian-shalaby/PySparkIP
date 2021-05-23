@@ -113,7 +113,8 @@ class IPSet:
         for ip in ips:
             # If its an IP UDT, extract the UDTs value, remove it to from map, then go to the next iteration
             if isinstance(ip, IPAddress):
-                del self.ipMap[str(ip.ipaddr)]
+                if str(ip.ipaddr) in self.ipMap:
+                    del self.ipMap[str(ip.ipaddr)]
                 continue
 
             # If its an IPSet, extract all of its values to a list and add it to the set
@@ -123,33 +124,30 @@ class IPSet:
             if isinstance(ip, pyspark.sql.dataframe.DataFrame):
                 ip = list(ip.toPandas()[ip.schema.names[0]])
                 for i in ip:
-                    self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
+                    if str(i.ipaddr) in self.ipMap:
+                        del self.ipMap[str(i.ipaddr)]
                 continue
 
             # If its a list, tuple, or set, iterate through it and remove each element from the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 # Try converting each element to an ipaddress object.
                 for element in ip:
-                    try:
+                    if str(ipaddress.ip_address(element)) in self.ipMap:
                         del self.ipMap[str(ipaddress.ip_address(element))]
-                    except:
-                        pass
                     try:
                         self.netAVL.delete(ipaddress.ip_network(element))
                     except:
-                        pass
+                        continue
                 # Continue to the next input after iterating through the list
                 continue
 
             # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
-            try:
+            if str(ipaddress.ip_address(ip)) in self.ipMap:
                 del self.ipMap[str(ipaddress.ip_address(ip))]
-            except:
-                pass
             try:
                 self.netAVL.delete(ipaddress.ip_network(ip))
             except:
-                pass
+                continue
 
         # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()

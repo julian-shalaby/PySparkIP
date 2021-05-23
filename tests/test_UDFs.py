@@ -82,6 +82,7 @@ class TestUDFs:
         SparkIPSets.add(test3, 'test3')
 
         ipDF.select('*').filter("setContains(IPAddress, 'test3')").show()
-        test2.add(ipDF.select('*'))
+        test2.add(ipDF.select('*').filter(setContains(test3)("IPAddress")))
+        test2.remove(ipDF.select('*'))
 
         test2.showAll()
