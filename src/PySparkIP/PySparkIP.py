@@ -132,22 +132,26 @@ class IPSet:
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
                 # Try converting each element to an ipaddress object.
                 for element in ip:
-                    if str(ipaddress.ip_address(element)) in self.ipMap:
+                    try:
                         del self.ipMap[str(ipaddress.ip_address(element))]
+                    except:
+                        pass
                     try:
                         self.netAVL.delete(ipaddress.ip_network(element))
                     except:
-                        continue
+                        pass
                 # Continue to the next input after iterating through the list
                 continue
 
             # If its not a list, tuple, set, or UDT, try converting it to an ipaddress object.
-            if str(ipaddress.ip_address(ip)) in self.ipMap:
+            try:
                 del self.ipMap[str(ipaddress.ip_address(ip))]
+            except:
+                pass
             try:
                 self.netAVL.delete(ipaddress.ip_network(ip))
             except:
-                continue
+                pass
 
         # Re-register the IPSet UDF or else this set won't be updated in the UDF
         update_sets()
