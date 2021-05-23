@@ -205,5 +205,6 @@ len(ipSet)
 # Nets intersect
 net1 = '192.0.0.0/16'
 net2 = '192.0.0.0/8'
+# or ipaddress.ip_network('192.0.0.0/8')
 netsIntersect(net1, net2)
 ```
