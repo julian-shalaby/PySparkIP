@@ -6,12 +6,6 @@ import warnings
 from pyspark.sql.types import BooleanType, LongType, StringType
 from pyspark.sql.functions import udf
 
-"""
-TODO:
-    1) Create an IPNetwork UDT (have to think this 1 over a bit)
-    2) Maybe create an IPSet UDT (have to think this 1 over a bit)
-"""
-
 
 class IPSet:
     def __init__(self, *ips):
