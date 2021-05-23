@@ -20,7 +20,6 @@ class IPSet:
         # Hash map for IP addresses, AVL Tree for IP networks
         self.ipMap = {}
         self.netAVL = AVL_Tree()
-        self.__length = len(ips)
 
         # Iterate through all IPs passed through
         for ip in ips:
@@ -63,7 +62,6 @@ class IPSet:
                 self.netAVL.insert(ipaddress.ip_network(ip))
 
     def add(self, *ips):
-        self.__length += len(ips)
         # Iterate through all IPs passed through
         for ip in ips:
             # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
@@ -108,7 +106,6 @@ class IPSet:
         update_sets()
 
     def remove(self, *ips):
-        self.__length -= len(ips)
         # Iterate through all IPs passed through
         for ip in ips:
             # If its an IP UDT, extract the UDTs value, remove it to from map, then go to the next iteration
@@ -244,7 +241,7 @@ class IPSet:
         return False
 
     def __len__(self):
-        return self.__length
+        return len(self.ipMap) + self.netAVL.length
 
 
 # A hash map from string -> IPSet to use IPSets in UDFs

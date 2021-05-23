@@ -67,6 +67,11 @@ class TestIPSet:
         ip_set2 = IPSet("::")
         assert ip_set != ip_set2
 
+    def test_len(request, ip_set):
+        ip_set = IPSet("::", '::/8', '192.0.0.0/8', '192.0.4.5', '225.0.0.0/16', '0.0.0.0/17', '::', '::/8')
+        ip_set.remove("::/8")
+        assert len(ip_set) == 5
+
     def test_intersection_success(request, ip_set):
         ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
         ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
