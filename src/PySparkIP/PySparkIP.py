@@ -251,7 +251,8 @@ class SetMap:
     # Remove sets by passing their names
     def remove(self, *set_name: str):
         for i in set_name:
-            del self.setMap[i]
+            if i in self.setMap:
+                del self.setMap[i]
         update_sets()
 
     # Clear to whole set map

@@ -77,15 +77,9 @@ class TestUDFs:
 
     def test_fun(self):
         flaggedIPs = IPSet('192.0.0.0', '::5', '8.0.0.0/24')
-        SparkIPSets.add(flaggedIPs, 'flaggedIPs')
-
         suspiciousIPs = IPSet("10.1.128.9", '0.99.89.83', '244.99.105.29', 'ff67:4d3d:97c4:5203:e903:a1ea:62a7:f99b',
                               '7:8:8::', '88::6', '6.9.0.7', '0.58.18.162', teredo, ipv4Translated)
-        SparkIPSets.add(suspiciousIPs, 'suspiciousIPs')
-
         incomingLog = IPSet(spark.sql("SELECT IPAddress FROM IPAddresses"))
-        SparkIPSets.add(incomingLog, 'incomingLog')
 
         flaggedIPs.add(suspiciousIPs.intersection(incomingLog))
-
         flaggedIPs.showAll()
