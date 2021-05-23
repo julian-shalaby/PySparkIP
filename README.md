@@ -13,7 +13,7 @@ This project is licensed under the Apache License. Please see [LICENSE](LICENSE)
 ## Tutorial
 ### Initialize
 Before using in SparkSQL, initialize PySparkIP by passing `spark` to `SparkIPInit`, 
-then define IPAddressUDT in the schema.
+then define `IPAddressUDT()` in the schema.
 <br/>
 Optionally pass the log level as well (if left unspecified, `SparkIPInit` resets 
 the log level to "WARN" and gives a warning message).
