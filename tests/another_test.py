@@ -92,3 +92,8 @@ class TestIPSet:
         assert ip_set.contains("5::")
         assert ip_set.contains("192.0.5.0")
         assert ip_set.contains("192.0.0.0/16")
+
+    def test_nets_intersect(self):
+        net1 = '192.0.0.0/16'
+        net2 = '192.0.0.0/8'
+        assert netsIntersect(net1, net2)

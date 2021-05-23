@@ -366,7 +366,7 @@ def setContains(ipset):
 
 
 # Other functions (not for SparkSQL use)
-def nets_intersect(net1, net2):
+def netsIntersect(net1, net2):
     net1 = ipaddress.ip_network(net1)
     net2 = ipaddress.ip_network(net2)
     if net1.network_address <= net2.broadcast_address and net1.broadcast_address >= net2.network_address:
