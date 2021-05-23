@@ -387,6 +387,6 @@ loopBackIPs = {'127.0.0.0/8', '::1'}
 ipv4Mapped = "::ffff:0:0/96"
 ipv4Translated = "::ffff:0:0:0/96"
 ipv4ipv6Translated = '64:ff9b::/96'
-teredo = '2001:0000:/32'
+teredo = '2001::/32'
 sixToFour = '2002::/16'
 siteLocal = 'fc00::/7'
