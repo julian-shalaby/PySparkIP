@@ -1,7 +1,7 @@
-from pyspark.sql.types import StructField, StructType
 from pyspark.sql import SparkSession
+from pyspark.sql.types import StructField, StructType
+
 from PySparkIP.src.PySparkIP.PySparkIP import *
-import pytest
 
 spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
 SparkIPInit(spark)
@@ -16,11 +16,14 @@ class TestUDFs:
         print("Multicast")
         spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)").show()
         ipDF.select('*').filter("isMulticast(IPAddress)").show()
+        ipDF.select('*').filter(isMulticast("IPAddress")).show()
 
     def test_private(request):
         # Private
         print("Private")
         spark.sql("SELECT * FROM IPAddresses WHERE isPrivate(IPAddress)").show()
+        ipDF.select('*').filter("isPrivate(IPAddress)").show()
+        ipDF.select('*').filter(isPrivate("IPAddress")).show()
 
     def test_teredo(request):
         # isTeredo
@@ -42,10 +45,11 @@ class TestUDFs:
         print("Sorting")
         spark.sql("SELECT * FROM IPAddresses SORT BY ipAsBinary(IPAddress)").show()
 
-    def networkContains_exploded(request):
+    def tes_networkContains(request):
         # Network contains
         print("Network contains")
         spark.sql("SELECT * FROM IPAddresses WHERE networkContains(IPAddress, '195.0.0.0/16')").show()
+        ipDF.select('*').filter(networkContains('195.0.0.0/16')("IPAddress")).show()
 
     def test_isIPv4(request):
         # IPv4 check
@@ -75,4 +79,9 @@ class TestUDFs:
 
         test3 = IPSet({"192.0.0.0", ip2, '10.1.128.0/17', "::", "8::9", '8.7.9.7', '192.0.2.0/26'})
         test3.add('192.0.2.0/26')
+        SparkIPSets.add(test3, 'test3')
 
+        ipDF.select('*').filter("setContains(IPAddress, 'test3')").show()
+        test2.add(ipDF.select('*'))
+
+        test2.showAll()

@@ -1,3 +1,5 @@
+import pyspark
+
 from .IPAddressUDT import *
 from .AVL_Tree import *
 import warnings
@@ -30,6 +32,12 @@ class IPSet:
             # If its an IPSet, extract all of its values to a list and add it to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
+
+            if isinstance(ip, pyspark.sql.dataframe.DataFrame):
+                ip = list(ip.toPandas()[ip.schema.names[0]])
+                for i in ip:
+                    self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
+                continue
 
             # If its a list, tuple, or set, iterate through it and add each element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
@@ -66,6 +74,12 @@ class IPSet:
             # If its an IPSet, extract all of its values to a list and add it to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
+
+            if isinstance(ip, pyspark.sql.dataframe.DataFrame):
+                ip = list(ip.toPandas()[ip.schema.names[0]])
+                for i in ip:
+                    self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
+                continue
 
             # If its a list, tuple, or set, iterate through it and add each element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
@@ -105,6 +119,12 @@ class IPSet:
             # If its an IPSet, extract all of its values to a list and add it to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
+
+            if isinstance(ip, pyspark.sql.dataframe.DataFrame):
+                ip = list(ip.toPandas()[ip.schema.names[0]])
+                for i in ip:
+                    self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
+                continue
 
             # If its a list, tuple, or set, iterate through it and remove each element from the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
