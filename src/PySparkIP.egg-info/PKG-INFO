@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PySparkIP
-Version: 1.1.0
+Version: 1.1.1
 Summary: An API for working with IP addresses in Apache Spark.
 Home-page: https://github.com/jshalaby510/PySparkIP
 Author: Julian Shalaby
