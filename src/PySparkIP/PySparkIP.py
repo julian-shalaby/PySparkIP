@@ -269,72 +269,6 @@ class SetMap:
 # The set map to use with the API
 SparkIPSets = SetMap()
 
-
-# Pass through a spark session variable to register all UDF functions
-def SparkIPInit(spark, log_level=None):
-    if log_level is None:
-        warnings.warn("No log level specified for SparkIP. Setting log level to WARN.", Warning)
-        log_level = "WARN"
-    """Address Types"""
-    # Multicast
-    spark.udf.register("isMulticast", lambda ip: ip.ipaddr.is_multicast, "boolean")
-    # Private
-    spark.udf.register("isPrivate", lambda ip: ip.ipaddr.is_private, "boolean")
-    # Global
-    spark.udf.register("isGlobal", lambda ip: ip.ipaddr.is_global, "boolean")
-    # Unspecified
-    spark.udf.register("isUnspecified", lambda ip: ip.ipaddr.is_unspecified, "boolean")
-    # Reserved
-    spark.udf.register("isReserved", lambda ip: ip.ipaddr.is_reserved, "boolean")
-    # Loopback
-    spark.udf.register("isLoopback", lambda ip: ip.ipaddr.is_loopback, "boolean")
-    # Link local
-    spark.udf.register("isLinkLocal", lambda ip: ip.ipaddr.is_link_local, "boolean")
-    # Site local
-    spark.udf.register("isSiteLocal", lambda ip: ip.ipaddr.is_site_local, "boolean")
-    # isIPv4 mapped
-    spark.udf.register("isIPv4Mapped", lambda ip: ip.is_ipv4_mapped(), "boolean")
-    # is6to4
-    spark.udf.register("is6to4", lambda ip: ip.is_6to4(), "boolean")
-    # isTeredo
-    spark.udf.register("isTeredo", lambda ip: ip.is_teredo(), "boolean")
-    # Compressed
-    spark.udf.register("compressedIP", lambda ip: ip.ipaddr.compressed, "string")
-    # Exploded
-    spark.udf.register("explodedIP", lambda ip: ip.ipaddr.exploded, "string")
-
-    """IP as a number"""""
-    # spark only supports long correctly. only use on IPv4
-    spark.udf.register("ipv4AsNum", lambda ip: int(ip.ipaddr), "long")
-
-    """IP as a binary string"""""
-    spark.udf.register("ipAsBinary", lambda ip: format(int(ip.ipaddr), '0128b'), "string")
-
-    """Network functions"""
-    # Net contains
-    spark.udf.register("networkContains", lambda ip, net: ip.ipaddr in ipaddress.ip_network(net),
-                       "boolean")
-
-    """Other functions"""
-    # IPv4 check
-    spark.udf.register("isIPv4", lambda ip: ip.ipaddr.version == 4, "boolean")
-    # IPv6 check
-    spark.udf.register("isIPv6", lambda ip: ip.ipaddr.version == 6, "boolean")
-    # So IPSet can reuse the spark session variable and reset log level
-    update_sets(spark, log_level)
-
-
-# Each time an IP Set is updated, its function has to re-register to reflect these changes
-def update_sets(spark=None, log_level="WARN"):
-    """IPSet functions"""
-    # Set contains
-    update_sets.spark = spark or update_sets.spark
-    update_sets.log_level = log_level or update_sets.log_level
-    update_sets.spark.sparkContext.setLogLevel("FATAL")
-    update_sets.spark.udf.register("setContains", lambda ip, ip_set: SparkIPSets.setMap[ip_set].contains(ip), "boolean")
-    update_sets.spark.sparkContext.setLogLevel(log_level)
-
-
 # Pure UDFs
 """Address Types"""
 isMulticast = udf(lambda ip: ip.ipaddr.is_multicast, BooleanType())
@@ -355,6 +289,72 @@ explodedIP = udf(lambda ip: ip.ipaddr.exploded, StringType())
 ipv4AsNum = udf(lambda ip: int(ip.ipaddr), LongType())
 """IP as a binary string"""""
 ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
+
+# Pass through a spark session variable to register all UDF functions
+def SparkIPInit(spark, log_level=None):
+    if log_level is None:
+        warnings.warn("No log level specified for SparkIP. Setting log level to WARN.", Warning)
+        log_level = "WARN"
+    """Address Types"""
+    # Multicast
+    spark.udf.register("isMulticast", isMulticast)
+    # Private
+    spark.udf.register("isPrivate", isPrivate)
+    # Global
+    spark.udf.register("isGlobal", isGlobal)
+    # Unspecified
+    spark.udf.register("isUnspecified", isUnspecified)
+    # Reserved
+    spark.udf.register("isReserved", isReserved)
+    # Loopback
+    spark.udf.register("isLoopback", isLoopback)
+    # Link local
+    spark.udf.register("isLinkLocal", isLinkLocal)
+    # Site local
+    spark.udf.register("isSiteLocal", isSiteLocal)
+    # isIPv4 mapped
+    spark.udf.register("isIPv4Mapped", isIPv4Mapped)
+    # is6to4
+    spark.udf.register("is6to4", is6to4)
+    # isTeredo
+    spark.udf.register("isTeredo", isTeredo)
+    # Compressed
+    spark.udf.register("compressedIP", compressedIP)
+    # Exploded
+    spark.udf.register("explodedIP", explodedIP)
+
+    """IP as a number"""""
+    # spark only supports long correctly. only use on IPv4
+    spark.udf.register("ipv4AsNum", ipv4AsNum)
+
+    """IP as a binary string"""""
+    spark.udf.register("ipAsBinary", ipAsBinary)
+
+    """Network functions"""
+    # Net contains
+    spark.udf.register("networkContains", lambda ip, net: ip.ipaddr in ipaddress.ip_network(net),
+                       "boolean")
+
+    """Other functions"""
+    # IPv4 check
+    spark.udf.register("isIPv4", isIPv4)
+    # IPv6 check
+    spark.udf.register("isIPv6", isIPv6)
+    # So IPSet can reuse the spark session variable and reset log level
+    update_sets(spark, log_level)
+
+
+# Each time an IP Set is updated, its function has to re-register to reflect these changes
+def update_sets(spark=None, log_level="WARN"):
+    """IPSet functions"""
+    # Set contains
+    update_sets.spark = spark or update_sets.spark
+    update_sets.log_level = log_level or update_sets.log_level
+    update_sets.spark.sparkContext.setLogLevel("FATAL")
+    update_sets.spark.udf.register("setContains", lambda ip, ip_set: SparkIPSets.setMap[ip_set].contains(ip), "boolean")
+    update_sets.spark.sparkContext.setLogLevel(log_level)
+
+
 """Network functions"""
 def networkContains(ipnet):
     return udf(lambda ip: ip.ipaddr in ipaddress.ip_network(ipnet), BooleanType())
