@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructField, StructType
-from src.PySparkIP.PySparkIP import *
+from PySparkIP.PySparkIP import *
 
 spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
 SparkIPInit(spark)
