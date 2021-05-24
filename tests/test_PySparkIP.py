@@ -59,35 +59,41 @@ class TestIPSet:
     def test_isEmpty_success(request, ip_set):
         assert ip_set.isEmpty()
 
-    # # Get the set intersection
-    # def intersects(self, set2):
-    #     intersectSet = IPSet()
-    #     for i in self.ipMap.keys():
-    #         if set2.contains(i):
-    #             intersectSet.add(i)
-    #     intersectSet.add(self.netAVL.netIntersect(self.root, set2))
-    #     return intersectSet
+    def test_equals_success(request, ip_set):
+        ip_set2 = IPSet(ip_set)
+        assert ip_set == ip_set2
 
-    # # Get the union of 2 sets
-    # def union(self, set2):
-    #     unionSet = IPSet()
-    #     for i in self.ipMap.keys():
-    #         unionSet.add(i)
-    #     for i in set2.ipMap.keys():
-    #         unionSet.add(i)
+    def test_not_equals_success(request, ip_set):
+        ip_set2 = IPSet("::")
+        assert ip_set != ip_set2
 
-    #     unionSet.add(self.netAVL.returnAll(self.root))
-    #     unionSet.add(set2.netAVL.returnAll(set2.root))
-    #     return unionSet
+    def test_len(request, ip_set):
+        ip_set = IPSet("::", '::/8', '192.0.0.0/8', '192.0.4.5', '225.0.0.0/16', '0.0.0.0/17', '::', '::/8')
+        ip_set.remove("::/8")
+        assert len(ip_set) == 5
 
-    # # Get the diff of 2 sets
-    # def diff(self, set2):
-    #     diffSet = IPSet()
-    #     for i in self.ipMap.keys():
-    #         if set2.contains(i) is False:
-    #             diffSet.add(i)
+    def test_intersection_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
+        assert ip_set.intersection(ip_set2) == IPSet("::", "5::", "1.0.0.0/8")
 
-    #     diffSet.add(self.netAVL.returnAll(self.root))
-    #     diffSet.remove(self.netAVL.netIntersect(self.root, set2))
+    def test_union_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
+        assert ip_set.union(ip_set2) == IPSet("::", "5::", "1.0.0.0/8", "2001::", "192.0.0.0/16", "2::", "::/16")
 
-    #     return diffSet
+    def test_diff_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        ip_set2 = IPSet("::", "5::", "1.0.0.0/8", "::/16", "2::")
+        assert ip_set.diff(ip_set2) == IPSet("2001::", "192.0.0.0/16")
+
+    def test_contains_success(request, ip_set):
+        ip_set.add("::", "2001::", "192.0.0.0/16", "1.0.0.0/8", "5::")
+        assert ip_set.contains("5::")
+        assert ip_set.contains("192.0.5.0")
+        assert ip_set.contains("192.0.0.0/16")
+
+    def test_nets_intersect(self):
+        net1 = '192.0.0.0/16'
+        net2 = '192.0.0.0/8'
+        assert netsIntersect(net1, net2)

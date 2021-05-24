@@ -1,11 +1,11 @@
-from PySparkIP.src.PySparkIP.PySparkIP import *
+from PySparkIP.PySparkIP import *
 import pytest
 
 
 class TestSetMap:
     @pytest.fixture(autouse=True)
     def before_all(request, mocker):
-        mocker.patch('PySparkIP.src.PySparkIP.PySparkIP.update_sets')
+        mocker.patch('PySparkIP.PySparkIP.update_sets')
 
     def test_add_set(request):
         ip_set = IPSet()
