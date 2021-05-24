@@ -13,7 +13,7 @@ This project is licensed under the Apache License. Please see [LICENSE](LICENSE)
 ## Tutorial
 ### Initialize
 Before using in SparkSQL, initialize PySparkIP by passing `spark` to `SparkIPInit`, 
-then define IPAddressUDT in the schema.
+then define `IPAddressUDT()` in the schema.
 <br/>
 Optionally pass the log level as well (if left unspecified, `SparkIPInit` resets 
 the log level to "WARN" and gives a warning message).
@@ -36,7 +36,7 @@ ipDF.createOrReplaceTempView("IPAddresses")
 # Multicast
 spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)")
 ipDF.select('*').filter("isMulticast(IPAddress)")
-ipDF.select('*').filter(isMulticast("IPAddress"))
+ipDF.select('*').withColumn("IPColumn", isMulticast("IPAddress"))
 
 """
 Other address types:
@@ -77,19 +77,39 @@ ipv4DF.select('*').sort(ipv4AsNum("IPAddress"))
 # Network contains
 spark.sql("SELECT * FROM IPAddresses WHERE networkContains(IPAddress, '195.0.0.0/16')")
 ipDF.select('*').filter("networkContains(IPAddress, '195.0.0.0/16')")
-ipDF.select('*').filter(networkContains("192.0.0.0/16")("IPAddress"))
+ipDF.select('*').withColumn("netCol", networkContains("192.0.0.0/16")("IPAddress"))
+
+# Or use ipaddress.ip_network objects
+net1 = ipaddress.ip_network('::/10')
+ipDF.select('*').filter(networkContains(net1)("IPAddress"))
 ```
 
 **IP Set**
-#### Create IP Sets:
+#### Create IP Sets (Note: This functionality also works with add and remove):
 ```python
+# Strings
 ipStr = '192.0.0.0'
 netStr = '225.0.0.0'
+# Tuples, lists, or sets
 ip_net_mix = ('::5', '5.0.0.0/8', '111.8.9.7')
+# ipaddress objects
+ipAddr = ipaddress.ip_address('::')
+# Dataframes
+ipMulticastDF = spark.sql("SELECT IPAddress FROM IPAddresses WHERE isMulticast(IPAddress)")
 
-ipSet = IPSet(ipStr, '::/16', '2001::', netStr, ip_net_mix)
-ipSet2 = IPSet("6::", "9.0.8.7")
+""" 
+Or use our predefined networks (multicastIPs, privateIPs, 
+ publicIPs, reservedIPs, unspecifiedIPs, linkLocalIPs, 
+ loopBackIPs, ipv4Mapped, ipv4Translated, ipv4ipv6Translated,
+ teredo, sixToFour, or siteLocal)
+ """
+
+# Mix them together
+ipSet = IPSet(ipStr, '::/16', '2001::', netStr, ip_net_mix, privateIPs)
+ipSet2 = IPSet("6::", "9.0.8.7", ipAddr, ipMulticastDF)
+# Use other IPSets
 ipSet3 = IPSet(ipSet, ipSet2)
+# Or just make an empty set
 ipSet4 = IPSet()
 ```
 #### Register IP Sets for use in SparkSQL:
@@ -122,7 +142,7 @@ SparkIPSets.add(ipSet, 'ipSet')
 # Set Contains
 spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'ipSet')")
 ipDF.select('*').filter("setContains(IPAddress, 'ipSet')")
-ipDF.select('*').filter(setContains(ipSet)("IPAddress"))
+ipDF.select('*').withColumn("setCol", setContains(ipSet)("IPAddress"))
 
 # Show sets available to use
 SparkIPSets.setsAvailable()
@@ -171,4 +191,20 @@ ipSet.returnAll()
 
 # Is empty
 ipSet.isEmpty()
+
+# Compare IPSets
+ipSet2 = ('2001::', '::33', 'ffff::f')
+ipSet == ipSet2
+ipSet != ipSet2
+
+# Return the # of elements in the set
+len(ipSet)
+```
+#### Other operations (outside SparkSQL):
+```python
+# Nets intersect
+net1 = '192.0.0.0/16'
+net2 = '192.0.0.0/8'
+# or ipaddress.ip_network('192.0.0.0/8')
+netsIntersect(net1, net2)
 ```

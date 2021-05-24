@@ -11,6 +11,7 @@ class TreeNode(object):
 class AVL_Tree(object):
     def __init__(self):
         self.root = None
+        self.length = 0
 
     # Helper function for ordering IP networks in the AVL tree
     @staticmethod
@@ -43,6 +44,7 @@ class AVL_Tree(object):
 
     def __insert(self, root, key):
         if not root:
+            self.length += 1
             return TreeNode(key)
         elif self.compareNetworks(key, root.val) == -1:
             root.left = self.__insert(root.left, key)
@@ -92,6 +94,7 @@ class AVL_Tree(object):
             root.right = self.__delete(root.right, key)
 
         else:
+            self.length -= 1
             if root.left is None:
                 temp = root.right
                 root = None

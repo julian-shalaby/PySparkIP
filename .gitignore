@@ -5,3 +5,7 @@ dist
 .DS_Store
 
 src/test.py
+
+src/__pycache__
+src/PySparkIP/__pycache__
+tests/__pycache__

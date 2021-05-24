@@ -1,16 +1,10 @@
+import pyspark
+
 from .IPAddressUDT import *
 from .AVL_Tree import *
 import warnings
 from pyspark.sql.types import BooleanType, LongType, StringType
 from pyspark.sql.functions import udf
-
-"""
-TODO:
-    1) Fix IPSet length tracking (if any IPs dont get added or removed that get passed through, they get counted
-    in length updates. Also IPSets, sets, lists, and tuples only get counted as 1 element)
-    2) Create an IPNetwork UDT (have to think this 1 over a bit)
-    3) Maybe create an IPSet UDT (have to think this 1 over a bit)
-"""
 
 
 class IPSet:
@@ -18,7 +12,6 @@ class IPSet:
         # Hash map for IP addresses, AVL Tree for IP networks
         self.ipMap = {}
         self.netAVL = AVL_Tree()
-        self.__length = len(ips)
 
         # Iterate through all IPs passed through
         for ip in ips:
@@ -30,6 +23,12 @@ class IPSet:
             # If its an IPSet, extract all of its values to a list and add it to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
+
+            if isinstance(ip, pyspark.sql.dataframe.DataFrame):
+                ip = list(ip.toPandas()[ip.schema.names[0]])
+                for i in ip:
+                    self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
+                continue
 
             # If its a list, tuple, or set, iterate through it and add each element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
@@ -55,7 +54,6 @@ class IPSet:
                 self.netAVL.insert(ipaddress.ip_network(ip))
 
     def add(self, *ips):
-        self.__length += len(ips)
         # Iterate through all IPs passed through
         for ip in ips:
             # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
@@ -66,6 +64,12 @@ class IPSet:
             # If its an IPSet, extract all of its values to a list and add it to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
+
+            if isinstance(ip, pyspark.sql.dataframe.DataFrame):
+                ip = list(ip.toPandas()[ip.schema.names[0]])
+                for i in ip:
+                    self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
+                continue
 
             # If its a list, tuple, or set, iterate through it and add each element to the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
@@ -94,17 +98,24 @@ class IPSet:
         update_sets()
 
     def remove(self, *ips):
-        self.__length -= len(ips)
         # Iterate through all IPs passed through
         for ip in ips:
             # If its an IP UDT, extract the UDTs value, remove it to from map, then go to the next iteration
             if isinstance(ip, IPAddress):
-                del self.ipMap[str(ip.ipaddr)]
+                if str(ip.ipaddr) in self.ipMap:
+                    del self.ipMap[str(ip.ipaddr)]
                 continue
 
             # If its an IPSet, extract all of its values to a list and add it to the set
             if isinstance(ip, IPSet):
                 ip = ip.returnAll()
+
+            if isinstance(ip, pyspark.sql.dataframe.DataFrame):
+                ip = list(ip.toPandas()[ip.schema.names[0]])
+                for i in ip:
+                    if str(i.ipaddr) in self.ipMap:
+                        del self.ipMap[str(i.ipaddr)]
+                continue
 
             # If its a list, tuple, or set, iterate through it and remove each element from the set
             if type(ip) is list or type(ip) is tuple or type(ip) is set:
@@ -222,7 +233,7 @@ class IPSet:
         return False
 
     def __len__(self):
-        return self.__length
+        return len(self.ipMap) + self.netAVL.length
 
 
 # A hash map from string -> IPSet to use IPSets in UDFs
@@ -240,7 +251,8 @@ class SetMap:
     # Remove sets by passing their names
     def remove(self, *set_name: str):
         for i in set_name:
-            del self.setMap[i]
+            if i in self.setMap:
+                del self.setMap[i]
         update_sets()
 
     # Clear to whole set map
@@ -355,9 +367,27 @@ def setContains(ipset):
 
 
 # Other functions (not for SparkSQL use)
-def nets_intersect(net1, net2):
+def netsIntersect(net1, net2):
     net1 = ipaddress.ip_network(net1)
     net2 = ipaddress.ip_network(net2)
     if net1.network_address <= net2.broadcast_address and net1.broadcast_address >= net2.network_address:
         return True
     return False
+
+
+multicastIPs = {'224.0.0.0/4', 'ff00::/8'}
+privateIPs = {'0.0.0.0/8', '10.0.0.0/8', '127.0.0.0/8', '169.254.0.0/16', '172.16.0.0/12', '192.0.0.0/29',
+              '192.0.0.170/31', '192.0.2.0/24', '192.168.0.0/16', '198.18.0.0/15', '198.51.100.0/24',
+              '203.0.113.0/24', '240.0.0.0/4', '255.255.255.255/32', '::1/128', '::/128', '::ffff:0:0/96',
+              '100::/64', '2001::/23', '2001:2::/48', '2001:db8::/32', '2001:10::/28', 'fc00::/7'}
+publicIPs = '100.64.0.0/10'
+reservedIPs = '240.0.0.0/4'
+unspecifiedIPs = {'0.0.0.0', '::'}
+linkLocalIPs = {'169.254.0.0/16', 'fe80::/10'}
+loopBackIPs = {'127.0.0.0/8', '::1'}
+ipv4Mapped = "::ffff:0:0/96"
+ipv4Translated = "::ffff:0:0:0/96"
+ipv4ipv6Translated = '64:ff9b::/96'
+teredo = '2001::/32'
+sixToFour = '2002::/16'
+siteLocal = 'fc00::/7'
