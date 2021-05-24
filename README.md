@@ -19,7 +19,7 @@ Optionally pass the log level as well (if left unspecified, `SparkIPInit` resets
 the log level to "WARN" and gives a warning message).
 ```python
 from pyspark.sql import SparkSession
-from SparkIP import *
+from PySparkIP import *
 
 spark = SparkSession.builder.appName("ipTest").getOrCreate()
 SparkIPInit(spark)
