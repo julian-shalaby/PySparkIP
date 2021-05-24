@@ -351,7 +351,7 @@ def update_sets(spark=None, log_level="WARN"):
     update_sets.spark = spark or update_sets.spark
     update_sets.log_level = log_level or update_sets.log_level
     update_sets.spark.sparkContext.setLogLevel("FATAL")
-    update_sets.spark.udf.register("setContains", lambda ip, ip_set: SparkIPSets.setMap[ip_set].contains(ip), "boolean")
+    update_sets.spark.udf.register("setContains", lambda ip, ip_set: PySparkIPSets.setMap[ip_set].contains(ip), "boolean")
     update_sets.spark.sparkContext.setLogLevel(log_level)
 
 
