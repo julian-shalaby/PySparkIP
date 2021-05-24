@@ -3,7 +3,7 @@ from pyspark.sql.types import StructField, StructType
 from PySparkIP.PySparkIP import *
 
 spark = SparkSession.builder.appName("PySpark IPAddress").getOrCreate()
-SparkIPInit(spark)
+PySparkIP(spark)
 schema = StructType([StructField("IPAddress", IPAddressUDT())])
 
 ipDF = spark.read.json("ipMixedFile.json", schema=schema)
@@ -67,7 +67,7 @@ class TestUDFs:
         # Set contains
         print("Set Contains")
         badIPs = IPSet(privateIPs, multicastIPs, '192.0.0.0/16', '::5')
-        SparkIPSets.add(badIPs, 'badIPs')
+        PySparkIPSets.add(badIPs, 'badIPs')
 
         checkLog = IPSet(spark.sql("SELECT IPAddress FROM IPAddresses WHERE setContains(IPAddress, 'badIPs')"))
 

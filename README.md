@@ -12,18 +12,18 @@ This project is licensed under the Apache License. Please see [LICENSE](LICENSE)
 
 ## Tutorial
 ### Initialize
-Before using in SparkSQL, initialize PySparkIP by passing `spark` to `SparkIPInit`, 
+Before using in SparkSQL, initialize PySparkIP by passing `spark` to `PySparkIP`, 
 then define `IPAddressUDT()` in the schema.
 <br/>
-Optionally pass the log level as well (if left unspecified, `SparkIPInit` resets 
+Optionally pass the log level as well (if left unspecified, `PySparkIP` resets 
 the log level to "WARN" and gives a warning message).
 ```python
 from pyspark.sql import SparkSession
 from PySparkIP import *
 
 spark = SparkSession.builder.appName("ipTest").getOrCreate()
-SparkIPInit(spark)
-# or SparkIPInit(spark, "DEBUG"), SparkIPInit(spark, "FATAL"), etc if specifying a log level
+PySparkIP(spark)
+# or PySparkIP(spark, "DEBUG"), PySparkIP(spark, "FATAL"), etc if specifying a log level
 
 schema = StructType([StructField("IPAddress", IPAddressUDT())])
 ipDF = spark.read.json("ipFile.json", schema=schema)
@@ -113,18 +113,18 @@ ipSet3 = IPSet(ipSet, ipSet2)
 ipSet4 = IPSet()
 ```
 #### Register IP Sets for use in SparkSQL:
-Before using IP Sets in SparkSQL, register it by passing it to `SparkIPSets`
+Before using IP Sets in SparkSQL, register it by passing it to `PySparkIPSets`
 ```python
 ipSet = IPSet('::')
 ipSet2 = IPSet()
 
 # Pass the set, then the set name
-SparkIPSets.add(ipSet, 'ipSet')
-SparkIPSets.add(ipSet2, 'ipSet2')
+PySparkIPSets.add(ipSet, 'ipSet')
+PySparkIPSets.add(ipSet2, 'ipSet2')
 ```
 #### Remove IP Sets from registered sets in SparkSQL:
 ```python
-SparkIPSets.remove('ipSet', 'ipSet2')
+PySparkIPSets.remove('ipSet', 'ipSet2')
 ```
 
 #### Use IP Sets in SparkSQL:
@@ -136,7 +136,7 @@ setOfIPs = {"192.0.0.0", "5422:6622:1dc6:366a:e728:84d4:257e:655a", "::"}
 ipSet = IPSet(setOfIPs)
 
 # Register it
-SparkIPSets.add(ipSet, 'ipSet')
+PySparkIPSets.add(ipSet, 'ipSet')
 
 #Use it!
 # Set Contains
@@ -145,13 +145,13 @@ ipDF.select('*').filter("setContains(IPAddress, 'ipSet')")
 ipDF.select('*').withColumn("setCol", setContains(ipSet)("IPAddress"))
 
 # Show sets available to use
-SparkIPSets.setsAvailable()
+PySparkIPSets.setsAvailable()
 
 # Remove a set
-SparkIPSets.remove('ipSet')
+PySparkIPSets.remove('ipSet')
 
 # Clear sets available
-SparkIPSets.clear()
+PySparkIPSets.clear()
 ```
 
 #### IP Set functions (outside SparkSQL):

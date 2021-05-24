@@ -181,7 +181,7 @@ class IPSet:
         print('IP addresses:')
         for i in self.ipMap.keys():
             print(i)
-        print('IP networks:')
+        print('\nIP networks:')
         self.netAVL.preOrder()
 
     def returnAll(self):
@@ -267,7 +267,7 @@ class SetMap:
 
 
 # The set map to use with the API
-SparkIPSets = SetMap()
+PySparkIPSets = SetMap()
 
 # Pure UDFs
 """Address Types"""
@@ -291,7 +291,7 @@ ipv4AsNum = udf(lambda ip: int(ip.ipaddr), LongType())
 ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
 
 # Pass through a spark session variable to register all UDF functions
-def SparkIPInit(spark, log_level=None):
+def PySparkIP(spark, log_level=None):
     if log_level is None:
         warnings.warn("No log level specified for SparkIP. Setting log level to WARN.", Warning)
         log_level = "WARN"
