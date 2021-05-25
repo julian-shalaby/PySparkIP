@@ -78,6 +78,8 @@ class TestUDFs:
         suspiciousIPs = IPSet("10.1.128.9", '0.99.89.83', '244.99.105.29', 'ff67:4d3d:97c4:5203:e903:a1ea:62a7:f99b',
                               '7:8:8::', '88::6', '6.9.0.7', '0.58.18.162', teredo, ipv4Translated)
         incomingLog = IPSet(spark.sql("SELECT IPAddress FROM IPAddresses"))
+        incomingLog.remove(spark.sql("SELECT IPAddress FROM IPAddresses"))
+        incomingLog.add(spark.sql("SELECT IPAddress FROM IPAddresses"))
 
         flaggedIPs.add(suspiciousIPs.intersection(incomingLog))
         flaggedIPs.showAll()

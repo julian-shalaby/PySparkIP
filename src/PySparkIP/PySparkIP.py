@@ -25,7 +25,7 @@ class IPSet:
                 ip = ip.returnAll()
 
             if isinstance(ip, pyspark.sql.dataframe.DataFrame):
-                ip = list(ip.toPandas()[ip.schema.names[0]])
+                ip = ip.rdd.flatMap(lambda x: x).collect()
                 for i in ip:
                     self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
                 continue
@@ -66,7 +66,7 @@ class IPSet:
                 ip = ip.returnAll()
 
             if isinstance(ip, pyspark.sql.dataframe.DataFrame):
-                ip = list(ip.toPandas()[ip.schema.names[0]])
+                ip = ip.rdd.flatMap(lambda x: x).collect()
                 for i in ip:
                     self.ipMap[str(i.ipaddr)] = int(i.ipaddr)
                 continue
@@ -111,7 +111,7 @@ class IPSet:
                 ip = ip.returnAll()
 
             if isinstance(ip, pyspark.sql.dataframe.DataFrame):
-                ip = list(ip.toPandas()[ip.schema.names[0]])
+                ip = ip.rdd.flatMap(lambda x: x).collect()
                 for i in ip:
                     if str(i.ipaddr) in self.ipMap:
                         del self.ipMap[str(i.ipaddr)]
