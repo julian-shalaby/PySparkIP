@@ -100,8 +100,8 @@ ipMulticastDF = spark.sql("SELECT IPAddress FROM IPAddresses WHERE isMulticast(I
 """ 
 Or use our predefined networks (multicastIPs, privateIPs, 
  publicIPs, reservedIPs, unspecifiedIPs, linkLocalIPs, 
- loopBackIPs, ipv4Mapped, ipv4Translated, ipv4ipv6Translated,
- teredo, sixToFour, or siteLocal)
+ loopBackIPs, ipv4MappedIPs, ipv4TranslatedIPs, ipv4ipv6TranslatedIPs,
+ teredoIPs, sixToFourIPs, or siteLocalIPs)
  """
 
 # Mix them together
