@@ -1,10 +1,9 @@
 Metadata-Version: 2.1
 Name: PySparkIP
-Version: 1.1.3
+Version: 1.1.4
 Summary: An API for working with IP addresses in Apache Spark.
 Home-page: https://github.com/jshalaby510/PySparkIP
-Author: Julian Shalaby
-Author-email: jshalaby@ucsc.edu
+Author: Julian Shalaby, Ryan Jacobs, Prateek Narayanan
 License: UNKNOWN
 Project-URL: Bug Tracker, https://github.com/jshalaby510/PySparkIP/issues
 Platform: UNKNOWN
@@ -117,8 +116,8 @@ ipMulticastDF = spark.sql("SELECT IPAddress FROM IPAddresses WHERE isMulticast(I
 """ 
 Or use our predefined networks (multicastIPs, privateIPs, 
  publicIPs, reservedIPs, unspecifiedIPs, linkLocalIPs, 
- loopBackIPs, ipv4Mapped, ipv4Translated, ipv4ipv6Translated,
- teredo, sixToFour, or siteLocal)
+ loopBackIPs, ipv4MappedIPs, ipv4TranslatedIPs, ipv4ipv6TranslatedIPs,
+ teredoIPs, sixToFourIPs, or siteLocalIPs)
  """
 
 # Mix them together
