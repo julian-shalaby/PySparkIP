@@ -26,7 +26,10 @@ class IPAddress:
     __UDT__ = IPAddressUDT()
 
     def __init__(self, addr):
-        self.ipaddr = ipaddress.ip_address(addr)
+        try:
+            self.ipaddr = ipaddress.ip_address(addr)
+        except:
+            self.ipaddr = ipaddress.ip_address('::')
 
     def is_ipv4_mapped(self):
         if self.ipaddr.version == 4:
