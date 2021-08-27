@@ -289,6 +289,13 @@ explodedIP = udf(lambda ip: ip.ipaddr.exploded, StringType())
 ipv4AsNum = udf(lambda ip: int(ip.ipaddr), LongType())
 """IP as a binary string"""""
 ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
+"""String to IP"""
+@udf(returnType=IPAddressUDT())
+def to_ip(x):
+  try:
+    return IPAddress(x)
+  except:
+    return IPAddress('::')
 
 # Pass through a spark session variable to register all UDF functions
 def PySparkIP(spark, log_level=None):
@@ -329,6 +336,9 @@ def PySparkIP(spark, log_level=None):
 
     """IP as a binary string"""""
     spark.udf.register("ipAsBinary", ipAsBinary)
+
+    """String to IP"""""
+    spark.udf.register("to_ip", to_ip)
 
     """Network functions"""
     # Net contains
