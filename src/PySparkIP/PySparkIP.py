@@ -292,10 +292,7 @@ ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
 """String to IP"""
 @udf(returnType=IPAddressUDT())
 def to_ip(x):
-  try:
     return IPAddress(x)
-  except:
-    return IPAddress('::')
 
 # Pass through a spark session variable to register all UDF functions
 def PySparkIP(spark, log_level=None):
