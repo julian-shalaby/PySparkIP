@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PySparkIP
-Version: 1.1.4
+Version: 1.1.5
 Summary: An API for working with IP addresses in Apache Spark.
 Home-page: https://github.com/jshalaby510/PySparkIP
 Author: Julian Shalaby, Ryan Jacobs, Prateek Narayanan
@@ -33,11 +33,12 @@ then define `IPAddressUDT()` in the schema.
 <br/>
 Optionally pass the log level as well (if left unspecified, `PySparkIP` resets 
 the log level to "WARN" and gives a warning message).
+<br/>
+NOTE: Values that are unsuccessfully converted to IP addresses will be converted to "::"
 ```python
-from pyspark.sql import SparkSession
 from PySparkIP import *
 
-spark = SparkSession.builder.appName("ipTest").getOrCreate()
+# Initialize for SparkSQL use (not needed for pure PySpark)
 PySparkIP(spark)
 # or PySparkIP(spark, "DEBUG"), PySparkIP(spark, "FATAL"), etc if specifying a log level
 
@@ -47,12 +48,19 @@ ipDF.createOrReplaceTempView("IPAddresses")
 ```
 
 ### Functions
+**Cast StringType() to IPAddressUDT()**
+```python
+# PySpark
+ipDF = ipDF.select(to_ip('ip_string'))
+# SparkSQL
+spark.sql("SELECT to_ip(ip_string) FROM IPAddresses")
+```
+
 **Check address type**
 ```python
 # Multicast
-spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)")
-ipDF.select('*').filter("isMulticast(IPAddress)")
 ipDF.select('*').withColumn("IPColumn", isMulticast("IPAddress"))
+spark.sql("SELECT * FROM IPAddresses WHERE isMulticast(IPAddress)")
 
 """
 Other address types:
@@ -128,6 +136,17 @@ ipSet3 = IPSet(ipSet, ipSet2)
 # Or just make an empty set
 ipSet4 = IPSet()
 ```
+#### Use IP Sets:
+```python
+# Initialize an IP Set
+setOfIPs = {"192.0.0.0", "5422:6622:1dc6:366a:e728:84d4:257e:655a", "::"}
+ipSet = IPSet(setOfIPs)
+
+# Use it!
+ipDF.select('*').filter("setContains(IPAddress, 'ipSet')")
+ipDF.select('*').withColumn("setCol", setContains(ipSet)("IPAddress"))
+```
+
 #### Register IP Sets for use in SparkSQL:
 Before using IP Sets in SparkSQL, register it by passing it to `PySparkIPSets`
 ```python
@@ -157,8 +176,6 @@ PySparkIPSets.add(ipSet, 'ipSet')
 #Use it!
 # Set Contains
 spark.sql("SELECT * FROM IPAddresses WHERE setContains(IPAddress, 'ipSet')")
-ipDF.select('*').filter("setContains(IPAddress, 'ipSet')")
-ipDF.select('*').withColumn("setCol", setContains(ipSet)("IPAddress"))
 
 # Show sets available to use
 PySparkIPSets.setsAvailable()
@@ -170,7 +187,7 @@ PySparkIPSets.remove('ipSet')
 PySparkIPSets.clear()
 ```
 
-#### IP Set functions (outside SparkSQL):
+#### IP Set functions (outside Spark):
 ```python
 ipSet = IPSet()
 
@@ -216,7 +233,7 @@ ipSet != ipSet2
 # Return the # of elements in the set
 len(ipSet)
 ```
-#### Other operations (outside SparkSQL):
+#### Other operations (outside Spark):
 ```python
 # Nets intersect
 net1 = '192.0.0.0/16'
