@@ -10,3 +10,7 @@ src/PySparkIP.egg-info/PKG-INFO
 src/PySparkIP.egg-info/SOURCES.txt
 src/PySparkIP.egg-info/dependency_links.txt
 src/PySparkIP.egg-info/top_level.txt
+tests/test_IPAddressUDT.py
+tests/test_PySparkIP.py
+tests/test_SetMap.py
+tests/test_UDFs.py
