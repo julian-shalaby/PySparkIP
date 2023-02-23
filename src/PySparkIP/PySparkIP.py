@@ -290,9 +290,30 @@ ipv4AsNum = udf(lambda ip: int(ip.ipaddr), LongType())
 """IP as a binary string"""""
 ipAsBinary = udf(lambda ip: format(int(ip.ipaddr), '0128b'), StringType())
 """String to IP"""
+
+
 @udf(returnType=IPAddressUDT())
 def to_ip(x):
     return IPAddress(x)
+
+
+def safe_convert_ip_addr(ip):
+    if isinstance(ip, IPAddress):
+        return ip.ipaddr
+    elif isinstance(ip, ipaddress.IPv4Address) or isinstance(ip, ipaddress.IPv6Address):
+        return ip
+    else:
+        return ipaddress.ip_address(ip)
+
+
+def safe_convert_ip_network(net):
+    if isinstance(net, IPAddress):
+        return net.ipaddr
+    elif isinstance(net, ipaddress.IPv4Network) or isinstance(net, ipaddress.IPv6Network):
+        return net
+    else:
+        return ipaddress.ip_network(net)
+
 
 # Pass through a spark session variable to register all UDF functions
 def PySparkIP(spark, log_level=None):
@@ -339,7 +360,7 @@ def PySparkIP(spark, log_level=None):
 
     """Network functions"""
     # Net contains
-    spark.udf.register("networkContains", lambda ip, net: ip.ipaddr in ipaddress.ip_network(net),
+    spark.udf.register("networkContains", lambda ip, net: safe_convert_ip_addr(ip) in safe_convert_ip_network(net),
                        "boolean")
 
     """Other functions"""
@@ -358,17 +379,24 @@ def update_sets(spark=None, log_level="WARN"):
     update_sets.spark = spark or update_sets.spark
     update_sets.log_level = log_level or update_sets.log_level
     update_sets.spark.sparkContext.setLogLevel("FATAL")
-    update_sets.spark.udf.register("setContains", lambda ip, ip_set: PySparkIPSets.setMap[ip_set].contains(ip), "boolean")
+    update_sets.spark.udf.register("setContains", lambda ip, ip_set: PySparkIPSets.setMap[ip_set].contains(ip),
+                                   "boolean")
     update_sets.spark.sparkContext.setLogLevel(log_level)
 
 
 """Network functions"""
+
+
 def networkContains(ipnet):
-    return udf(lambda ip: ip.ipaddr in ipaddress.ip_network(ipnet), BooleanType())
+    return udf(lambda ip: safe_convert_ip_addr(ip) in safe_convert_ip_network(ipnet), BooleanType())
+
+
 """Other functions"""
 isIPv4 = udf(lambda ip: ip.ipaddr.version == 4, BooleanType())
 isIPv6 = udf(lambda ip: ip.ipaddr.version == 6, BooleanType())
 """IPSet functions"""
+
+
 def setContains(ipset):
     return udf(lambda ip: ipset.contains(ip), BooleanType())
 
