@@ -298,15 +298,21 @@ def to_ip(x):
 
 
 def safe_convert_ip_addr(ip):
-    if isinstance(ip, ipaddress.IPv4Address) or isinstance(ip, ipaddress.IPv6Address):
+    if isinstance(ip, IPAddress):
+        return ip.ipaddr
+    elif isinstance(ip, ipaddress.IPv4Address) or isinstance(ip, ipaddress.IPv6Address):
         return ip
-    return ipaddress.ip_address(ip)
+    else:
+        return ipaddress.ip_address(ip)
 
 
 def safe_convert_ip_network(net):
-    if isinstance(net, ipaddress.IPv4Network) or isinstance(net, ipaddress.IPv6Network):
+    if isinstance(net, IPAddress):
+        return net.ipaddr
+    elif isinstance(net, ipaddress.IPv4Network) or isinstance(net, ipaddress.IPv6Network):
         return net
-    return ipaddress.ip_network(net)
+    else:
+        return ipaddress.ip_network(net)
 
 
 # Pass through a spark session variable to register all UDF functions
