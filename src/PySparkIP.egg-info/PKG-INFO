@@ -1,12 +1,10 @@
 Metadata-Version: 2.1
 Name: PySparkIP
-Version: 1.1.6
+Version: 1.1.7
 Summary: An API for working with IP addresses in Apache Spark.
 Home-page: https://github.com/jshalaby510/PySparkIP
 Author: Julian Shalaby, Ryan Jacobs, Prateek Narayanan
-License: UNKNOWN
 Project-URL: Bug Tracker, https://github.com/jshalaby510/PySparkIP/issues
-Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Operating System :: OS Independent
@@ -241,5 +239,3 @@ net2 = '192.0.0.0/8'
 # or ipaddress.ip_network('192.0.0.0/8')
 netsIntersect(net1, net2)
 ```
-
-

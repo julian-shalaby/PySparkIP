@@ -27,7 +27,10 @@ class IPAddress:
 
     def __init__(self, addr):
         try:
-            self.ipaddr = ipaddress.ip_address(addr)
+            if '/' in addr:
+                self.ipaddr = ipaddress.ip_network(addr)
+            else:
+                self.ipaddr = ipaddress.ip_address(addr)
         except:
             self.ipaddr = ipaddress.ip_address('::')
 
