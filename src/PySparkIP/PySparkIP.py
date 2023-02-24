@@ -15,6 +15,8 @@ class IPSet:
 
         # Iterate through all IPs passed through
         for ip in ips:
+            if ip is None:
+                continue
             # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
             if isinstance(ip, IPAddress):
                 self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
@@ -56,6 +58,9 @@ class IPSet:
     def add(self, *ips):
         # Iterate through all IPs passed through
         for ip in ips:
+            if ip is None:
+                continue
+
             # If its an IP UDT, extract the UDTs value, add it to the map, then go to the next iteration
             if isinstance(ip, IPAddress):
                 self.ipMap[str(ip.ipaddr)] = int(ip.ipaddr)
@@ -146,6 +151,8 @@ class IPSet:
         update_sets()
 
     def contains(self, ip):
+        if ip is None:
+            return None
         if isinstance(ip, IPAddress):
             # Check if its in the IP address hash map
             if str(ip.ipaddr) in self.ipMap:
@@ -398,7 +405,13 @@ isIPv6 = udf(lambda ip: ip.ipaddr.version == 6, BooleanType())
 
 
 def setContains(ipset):
-    return udf(lambda ip: ipset.contains(ip), BooleanType())
+    @udf(returnType=BooleanType())
+    def _setContains(ip):
+        try:
+            return ipset.contains(ip)
+        except:
+            return None
+    return _setContains
 
 
 # Other functions (not for SparkSQL use)
