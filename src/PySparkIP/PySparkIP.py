@@ -398,7 +398,13 @@ isIPv6 = udf(lambda ip: ip.ipaddr.version == 6, BooleanType())
 
 
 def setContains(ipset):
-    return udf(lambda ip: ipset.contains(ip), BooleanType())
+    @udf(returnType=BooleanType())
+    def _setContains(ip):
+        try:
+            return ipset.contains(ip)
+        except:
+            return False
+    return setContains
 
 
 # Other functions (not for SparkSQL use)
